@@ -22,6 +22,7 @@ def getOptions():
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument("-a", "--address", type=int, default=10, help="Local CSP address")
     parser.add_argument("-c", "--can", help="Add CAN interface")
+    parser.add_argument("-k", "--kiss", help="Add KISS interface")
     parser.add_argument("-z", "--zmq", help="Add ZMQ interface")
     parser.add_argument("-s", "--server-address", type=int, default=27, help="Server address")
     parser.add_argument("-R", "--routing-table", help="Routing table")
@@ -43,17 +44,21 @@ if __name__ == "__main__":
 
     if options.can:
         # add CAN interface
-        libcsp.can_socketcan_init(options.can)                  
-   
-    if options.zmq: 
+        libcsp.can_socketcan_init(options.can)
+
+    if options.zmq:
         # add ZMQ interface - (address, host)
-        # creates publish and subrcribe endpoints from the host        
-        libcsp.zmqhub_init(options.address, options.zmq)        
-        
+        # creates publish and subrcribe endpoints from the host
+        libcsp.zmqhub_init(options.address, options.zmq)
+
         # Format: \<address\>[/mask] \<interface\> [via][, next entry]
         # Examples: "0/0 CAN, 8 KISS, 10 I2C 10", same as "0/0 CAN, 8/5 KISS, 10/5 I2C 10"
         libcsp.rtable_load("0/0 ZMQHUB")
-    
+
+    if options.kiss:
+        libcsp.kiss_init(options.kiss, options.address)
+        libcsp.rtable_load("0/0 KISS")
+
     if options.routing_table:
         # same format/use as line above
         libcsp.rtable_load(options.routing_table)
@@ -64,7 +69,7 @@ if __name__ == "__main__":
     time.sleep(0.2)  # allow router task startup
 
     print("Connections:")
-    # Prints connections format: 
+    # Prints connections format:
     # [state 1 or 0 (open/closed)] [5-bit src address] [5-bit dest address] [6-bit dest port] [6 bit src port] [socket to be woken when packet is ready]
     libcsp.print_connections()
 
@@ -73,7 +78,7 @@ if __name__ == "__main__":
     libcsp.print_interfaces()
 
     print("Routes:")
-    # Prints route table format: 
+    # Prints route table format:
     # [address] [netmask] [interface name] optional([via])
     libcsp.print_routes()
 
@@ -82,7 +87,7 @@ if __name__ == "__main__":
     # CMP identification request
     print("CMP ident:", libcsp.cmp_ident(options.server_address))
 
-    # Parameters: {address of subsystem}, optional:{timeout ms (default=1000)}, optional:{data size in bytes (default=10)}, optional:{connection options as bit flags (see "src\csp_conn.c")} 
+    # Parameters: {address of subsystem}, optional:{timeout ms (default=1000)}, optional:{data size in bytes (default=10)}, optional:{connection options as bit flags (see "src\csp_conn.c")}
     # Ping message
     print("Ping: %d ms" % libcsp.ping(options.server_address))
 
@@ -98,9 +103,9 @@ if __name__ == "__main__":
     # Perform an entire request & reply transaction w/ params:
         # 0                       - priority
         # options.server_address  - dest address
-        # 10                      - dest port 
+        # 10                      - dest port
         # 1000                    - timeout ms
         # outbuf                  - outgoing data (request)
-        # inbuf                   - buffer provided for recieving data (reply)      
+        # inbuf                   - buffer provided for recieving data (reply)
     libcsp.transaction(0, options.server_address, 10, 1000, outbuf, inbuf)
     print ("  got reply from server [%s]" % (''.join('{:02x}'.format(x) for x in inbuf)))
