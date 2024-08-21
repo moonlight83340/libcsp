@@ -44,7 +44,8 @@ if __name__ == "__main__":
 
     if options.can:
         # add CAN interface
-        libcsp.can_socketcan_init(options.can)
+        libcsp.can_socketcan_init(options.can, options.address, 1000000, 1)
+        libcsp.rtable_load("0/0 CAN")
 
     if options.zmq:
         # add ZMQ interface - (address, host)
@@ -52,7 +53,7 @@ if __name__ == "__main__":
         libcsp.zmqhub_init(options.address, options.zmq)
 
         # Format: \<address\>[/mask] \<interface\> [via][, next entry]
-        # Examples: "0/0 CAN, 8 KISS, 10 I2C 10", same as "0/0 CAN, 8/5 KISS, 10/5 I2C 10"
+        # Examples: "0/0 CAN, 8 KISS, 10 I2C 10", sam, 1e as "0/0 CAN, 8/5 KISS, 10/5 I2C 10"
         libcsp.rtable_load("0/0 ZMQHUB")
 
     if options.kiss:

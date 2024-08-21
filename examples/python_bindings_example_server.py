@@ -24,6 +24,7 @@ def get_options():
     parser.add_argument("-a", "--address", type=int, default=10, help="Local CSP address")
     parser.add_argument("-z", "--zmq", help="Add ZMQ interface")
     parser.add_argument("-k", "--kiss", help="Add KISS interface")
+    parser.add_argument("-c", "--can", help="Add CAN interface")
     return parser.parse_args(sys.argv[1:])
 
 
@@ -123,6 +124,11 @@ if __name__ == "__main__":
     if options.kiss:
         libcsp.kiss_init(options.kiss, options.address)
         libcsp.rtable_load("0/0 KISS")
+
+    if options.can:
+        # add CAN interface
+        libcsp.can_socketcan_init(options.can, options.address, 1000000, 1)
+        libcsp.rtable_load("0/0 CAN")
 
     # Parameters: {priority} - 0 (critical), 1 (high), 2 (norm), 3 (low) ---- default=2
     # Start the router task - creates routing thread
