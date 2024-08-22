@@ -122,3 +122,68 @@ To run the example with ZMQHUB interfaces, start the `zmqproxy`, client and serv
     Client task started
     Ping address: 2, result 8 [mS]
     reboot system request sent to address: 2
+
+## Running the example with CAN interface
+
+To run the example with CAN interfaces, start the client and server in two separate processes.
+
+    libcsp$ ./build/examples/csp_server -c vcan0 -a 2
+    Initialising CSP
+    INIT CAN: device: [vcan0], bitrate: 1000000, promisc: 1
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    Connection table
+    [00 0x6391937ab9c0] S:0, 0 -> 0, 0 -> 0 (17) fl 0
+    [01 0x6391937abad0] S:0, 0 -> 0, 0 -> 0 (18) fl 0
+    [02 0x6391937abbe0] S:0, 0 -> 0, 0 -> 0 (19) fl 0
+    [03 0x6391937abcf0] S:0, 0 -> 0, 0 -> 0 (20) fl 0
+    [04 0x6391937abe00] S:0, 0 -> 0, 0 -> 0 (21) fl 0
+    [05 0x6391937abf10] S:0, 0 -> 0, 0 -> 0 (22) fl 0
+    [06 0x6391937ac020] S:0, 0 -> 0, 0 -> 0 (23) fl 0
+    [07 0x6391937ac130] S:0, 0 -> 0, 0 -> 0 (24) fl 0
+    Interfaces
+    LOOP      addr: 0 netmask: 14 dfl: 0
+              tx: 00000 rx: 00000 txe: 00000 rxe: 00000
+              drop: 00000 autherr: 00000 frame: 00000
+              txb: 0 (0B) rxb: 0 (0B) 
+
+    CAN       addr: 2 netmask: 0 dfl: 1
+              tx: 00000 rx: 00000 txe: 00000 rxe: 00000
+              drop: 00000 autherr: 00000 frame: 00000
+              txb: 0 (0B) rxb: 0 (0B) 
+
+    Server task started
+    Packet received on SERVER_PORT: Hello world A
+
+    libcsp$ ./build/examples/csp_client -c vcan0 -a 3 -C 2
+    Initialising CSP
+    INIT CAN: device: [vcan0], bitrate: 1000000, promisc: 1
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    RTNETLINK answers: Operation not permitted
+    Connection table
+    [00 0x573dbe9109a0] S:0, 0 -> 0, 0 -> 0 (17) fl 0
+    [01 0x573dbe910ab0] S:0, 0 -> 0, 0 -> 0 (18) fl 0
+    [02 0x573dbe910bc0] S:0, 0 -> 0, 0 -> 0 (19) fl 0
+    [03 0x573dbe910cd0] S:0, 0 -> 0, 0 -> 0 (20) fl 0
+    [04 0x573dbe910de0] S:0, 0 -> 0, 0 -> 0 (21) fl 0
+    [05 0x573dbe910ef0] S:0, 0 -> 0, 0 -> 0 (22) fl 0
+    [06 0x573dbe911000] S:0, 0 -> 0, 0 -> 0 (23) fl 0
+    [07 0x573dbe911110] S:0, 0 -> 0, 0 -> 0 (24) fl 0
+    Interfaces
+    LOOP      addr: 0 netmask: 14 dfl: 0
+              tx: 00000 rx: 00000 txe: 00000 rxe: 00000
+              drop: 00000 autherr: 00000 frame: 00000
+              txb: 0 (0B) rxb: 0 (0B)
+
+    CAN       addr: 3 netmask: 0 dfl: 1
+              tx: 00000 rx: 00000 txe: 00000 rxe: 00000
+              drop: 00000 autherr: 00000 frame: 00000
+              txb: 0 (0B) rxb: 0 (0B)
+
+    Client task started
+    Ping address: 2, result 0 [mS]
+    reboot system request sent to address: 2
