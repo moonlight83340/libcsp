@@ -44,8 +44,9 @@ if __name__ == "__main__":
 
     if options.can:
         # add CAN interface
-        libcsp.can_socketcan_init(options.can)                  
-   
+        libcsp.can_socketcan_init(options.can, options.address)
+        libcsp.rtable_load("0/0 CAN")
+
     if options.zmq: 
         # add ZMQ interface - (address, host)
         # creates publish and subrcribe endpoints from the host        
