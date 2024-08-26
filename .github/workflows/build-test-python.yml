@@ -55,7 +55,7 @@ jobs:
       - name: Build libcsp with python binding with meson
         if: ${{ matrix.buildsystem == 'meson' }}
         run: |
-          meson setup builddir -Denable_python3_bindings=true -Duse_rtable=true && ninja -C builddir
+          meson setup builddir -Denable_python3_bindings=true && ninja -C builddir
 
       - name: Run ZMQ Python binding Test
         run: |
