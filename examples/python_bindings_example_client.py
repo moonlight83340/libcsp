@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # Parameters: {node} - address of subsystem, optional:{timeout ms (default=1000)}
     # CSP Management Protocol (CMP)
     # CMP identification request
-#    print("CMP ident:", libcsp.cmp_ident(options.server_address))
+    print("CMP ident:", libcsp.cmp_ident(options.server_address))
 
     # Parameters: {address of subsystem}, optional:{timeout ms (default=1000)}, optional:{data size in bytes (default=10)}, optional:{connection options as bit flags (see "src\csp_conn.c")} 
     # Ping message
