@@ -143,9 +143,9 @@ if __name__ == "__main__":
     libcsp.print_interfaces()
 
 
-    if options.routing_table:
-        print("Routes:")
-        libcsp.print_routes()
+#    if options.routing_table:
+#        print("Routes:")
+#        libcsp.print_routes()
 
     # start CSP server in a thread
     threading.Thread(target=csp_server).start()
