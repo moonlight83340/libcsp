@@ -210,7 +210,7 @@ int main(int argc, char * argv[]) {
 			csp_rtable_set(0, 0, default_iface, CSP_NO_VIA_ADDRESS);
 		}
 	}else{
-		printf("Example: don't use CSP_USE_RTABLE\n");
+		csp_print("Example: don't use CSP_USE_RTABLE\n");
 	}
 
     csp_print("Connection table\r\n");
