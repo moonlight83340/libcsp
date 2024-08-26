@@ -60,7 +60,7 @@ if __name__ == "__main__":
         libcsp.kiss_init(options.kiss, options.address)
         #libcsp.rtable_load("0/0 KISS")
 
-    if options.routing_table:
+#    if options.routing_table:
         # same format/use as line above
         #libcsp.rtable_load(options.routing_table)
 
