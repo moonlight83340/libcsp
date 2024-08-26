@@ -10,7 +10,6 @@
 #include <csp/drivers/can_socketcan.h>
 #include <csp/interfaces/csp_if_zmqhub.h>
 
-
 /* This function must be provided in arch specific way */
 int router_start(void);
 
@@ -210,6 +209,8 @@ int main(int argc, char * argv[]) {
 		} else if (default_iface) {
 			csp_rtable_set(0, 0, default_iface, CSP_NO_VIA_ADDRESS);
 		}
+	}else{
+		printf("Example: don't use CSP_USE_RTABLE\n");
 	}
 
     csp_print("Connection table\r\n");
