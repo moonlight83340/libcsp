@@ -43,7 +43,7 @@ jobs:
       - name: Build libcsp with python binding with cmake
         if: ${{ matrix.buildsystem == 'cmake' }}
         run: |
-          cmake -GNinja -B builddir -DCSP_ENABLE_PYTHON3_BINDINGS=1 -DCSP_USE_RTABLE=1 && ninja -C builddir
+          cmake -GNinja -B builddir -DCSP_ENABLE_PYTHON3_BINDINGS=1 && ninja -C builddir
 
       - name: Install the latest Meson using Pip if Python is 3.12 or later
         # Meson 1.3+ supports Python 3.12 (distutils removed)

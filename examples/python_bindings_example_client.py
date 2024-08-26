@@ -54,15 +54,15 @@ if __name__ == "__main__":
         
         # Format: \<address\>[/mask] \<interface\> [via][, next entry]
         # Examples: "0/0 CAN, 8 KISS, 10 I2C 10", same as "0/0 CAN, 8/5 KISS, 10/5 I2C 10"
-        libcsp.rtable_load("0/0 ZMQHUB")
+        #libcsp.rtable_load("0/0 ZMQHUB")
 
     if options.kiss:
         libcsp.kiss_init(options.kiss, options.address)
-        libcsp.rtable_load("0/0 KISS")
+        #libcsp.rtable_load("0/0 KISS")
 
     if options.routing_table:
         # same format/use as line above
-        libcsp.rtable_load(options.routing_table)
+        #libcsp.rtable_load(options.routing_table)
 
     # Parameters: {priority} - 0 (critical), 1 (high), 2 (norm), 3 (low) ---- default=2
     # Start the router task - creates routing thread
