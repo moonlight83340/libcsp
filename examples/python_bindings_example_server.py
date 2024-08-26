@@ -128,7 +128,7 @@ if __name__ == "__main__":
     if options.can:
         # add CAN interface
         libcsp.can_socketcan_init(options.can, options.address)
-        libcsp.rtable_load("0/0 CAN")
+        #libcsp.rtable_load("0/0 CAN")
 
     # Parameters: {priority} - 0 (critical), 1 (high), 2 (norm), 3 (low) ---- default=2
     # Start the router task - creates routing thread
