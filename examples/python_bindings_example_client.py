@@ -78,10 +78,11 @@ if __name__ == "__main__":
     # Prints interfaces format:
     libcsp.print_interfaces()
 
-    print("Routes:")
-    # Prints route table format: 
-    # [address] [netmask] [interface name] optional([via])
-    libcsp.print_routes()
+    if options.routing_table:
+        print("Routes:")
+        # Prints route table format: 
+        # [address] [netmask] [interface name] optional([via])
+        libcsp.print_routes()
 
     # Parameters: {node} - address of subsystem, optional:{timeout ms (default=1000)}
     # CSP Management Protocol (CMP)
