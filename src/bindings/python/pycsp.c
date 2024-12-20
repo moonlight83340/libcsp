@@ -209,7 +209,7 @@ static PyObject * pycsp_send(PyObject * self, PyObject * args) {
 	Py_RETURN_NONE;
 }
 
-#if 0
+
 static PyObject* pycsp_sfp_send(PyObject *self, PyObject *args) {
     PyObject* conn_capsule;
     Py_buffer data;
@@ -262,7 +262,7 @@ static PyObject* pycsp_sfp_recv(PyObject *self, PyObject *args) {
 
     return PyCapsule_New(dataout, PACKET_CAPSULE, pycsp_free_csp_buffer);
 }
-#endif
+
 
 static PyObject * pycsp_transaction(PyObject * self, PyObject * args) {
 	uint8_t prio;
@@ -949,8 +949,8 @@ static PyMethodDef methods[] = {
 	{"accept", pycsp_accept, METH_VARARGS, ""},
 	{"read", pycsp_read, METH_VARARGS, ""},
 	{"send", pycsp_send, METH_VARARGS, ""},
-	//{"sfp_send",            pycsp_sfp_send,            METH_VARARGS, ""},
-	//{"sfp_recv",            pycsp_sfp_recv,            METH_VARARGS, ""},
+	{"sfp_send",            pycsp_sfp_send,            METH_VARARGS, ""},
+	{"sfp_recv",            pycsp_sfp_recv,            METH_VARARGS, ""},
 	{"transaction", pycsp_transaction, METH_VARARGS, ""},
 	{"sendto_reply", pycsp_sendto_reply, METH_VARARGS, ""},
 	{"sendto", pycsp_sendto, METH_VARARGS, ""},
