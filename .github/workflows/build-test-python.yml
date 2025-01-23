@@ -56,6 +56,10 @@ jobs:
         run: |
           meson setup builddir -Denable_python3_bindings=true -Duse_rtable=true && ninja -C builddir
 
+      - name: Run Loopback Test
+        run: |
+          PYTHONPATH=builddir python3 examples/csp_server_client.py -t 10
+
       - name: Run ZMQ Python binding Test
         run: |
           build/examples/zmqproxy &
