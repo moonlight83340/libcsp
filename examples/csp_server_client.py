@@ -3,8 +3,26 @@ Usage: LD_LIBRARY_PATH=build PYTHONPATH=build python3 ./examples/csp_server_clie
 """
 import time
 import threading
+import sys
+import argparse
 import libcsp_py3 as csp
 from typing import Any, Callable
+
+server_received = 0
+server_received_lock = threading.Lock()
+stop_event = threading.Event()  # Event to signal threads to stop
+
+
+def get_options():
+    parser = argparse.ArgumentParser(description="Parses command.")
+    parser.add_argument(
+        "-t",
+        "--test",
+        type=int,
+        default=3,
+        help="Enable test mode and specify duration in seconds",
+    )
+    return parser.parse_args(sys.argv[1:])
 
 
 def printer(node: str, color: str) -> Callable:
@@ -16,6 +34,7 @@ def printer(node: str, color: str) -> Callable:
 
 
 def server_task(addr: int, port: int) -> None:
+    global server_received
     _print = printer('server', '\033[96m')
     _print('Starting server task')
 
@@ -24,7 +43,7 @@ def server_task(addr: int, port: int) -> None:
 
     csp.listen(sock, 10)
 
-    while 1:
+    while not stop_event.is_set():
         conn = csp.accept(sock, 10000)
 
         if conn is None:
@@ -36,6 +55,8 @@ def server_task(addr: int, port: int) -> None:
                     port=port,
                     data=csp.packet_get_data(packet).decode('utf-8'))
                 )
+                with server_received_lock:
+                    server_received += 1
             else:
                 csp.service_handler(conn, packet)
 
@@ -46,7 +67,7 @@ def client_task(addr: int, port: int) -> None:
 
     count = ord('A')
 
-    while 1:
+    while not stop_event.is_set():
         time.sleep(1)
 
         ping = csp.ping(addr, 1000, 100, csp.CSP_O_NONE)
@@ -60,7 +81,7 @@ def client_task(addr: int, port: int) -> None:
         if packet is None:
             raise Exception('Failed to get CSP buffer')
 
-        data = bytes('Hello World {}'.format(chr(count)), 'ascii') + b'\x00'
+        data = bytes('Hello World {}'.format(chr(count)), 'utf-8') + b'\x00'
         count += 1
 
         csp.packet_set_data(packet, data)
@@ -68,18 +89,46 @@ def client_task(addr: int, port: int) -> None:
 
 
 def main() -> None:
+    global server_received
+    run_duration_in_sec = 3
+    options = get_options()
+
+    if options.test:
+        run_duration_in_sec = options.test
+        print(f"Running in test mode for {run_duration_in_sec} seconds...")
+
     csp.init("", "", "")
     csp.route_start_task()
 
     serv_addr = 0
     serv_port = 10
+    threads = []
 
     for task in (server_task, client_task):
         t = threading.Thread(target=task, args=(serv_addr, serv_port))
+        threads.append(t)
         t.start()
 
-    print('Server and client started')
+    print("Server and client started")
+
+    while not stop_event.is_set():
+        time.sleep(run_duration_in_sec)
+
+        if options.test:
+            with server_received_lock:
+                if server_received < 5:
+                    print(f"Server received {server_received} packets. Test failed!")
+                    stop_event.set()
+                    for t in threads:
+                        t.join()
+                    exit(1)
+                elif server_received >= 5:
+                    print(f"Server received {server_received} packets. Test passed!")
+                    stop_event.set()
+                    for t in threads:
+                        t.join()
+                    exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
