@@ -76,8 +76,7 @@ def csp_server():
                 data[0] = data[0] + 1
 
                 # free up a buffer to hold the reply
-                # parameters: {buffer size (# of 4-byte doublewords)}
-                reply = libcsp.buffer_get(0)
+                reply = libcsp.buffer_get_always()
 
                 # store the data into the reply buffer
                 libcsp.packet_set_data(reply, data)

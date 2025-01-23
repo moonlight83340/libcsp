@@ -56,7 +56,7 @@ def client_task(addr: int, port: int) -> None:
         if conn is None:
             raise Exception('Connection failed')
 
-        packet = csp.buffer_get()
+        packet = csp.buffer_get_always()
         if packet is None:
             raise Exception('Failed to get CSP buffer')
 
