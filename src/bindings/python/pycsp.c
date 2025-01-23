@@ -653,6 +653,12 @@ static PyObject * pycsp_buffer_get(PyObject * self, PyObject * args) {
 	return PyCapsule_New(packet, PACKET_CAPSULE, pycsp_free_csp_buffer);
 }
 
+static PyObject * pycsp_buffer_get_always(PyObject * self, PyObject * args) {
+	void * packet = csp_buffer_get_always();
+
+	return PyCapsule_New(packet, PACKET_CAPSULE, pycsp_free_csp_buffer);
+}
+
 static PyObject * pycsp_buffer_free(PyObject * self, PyObject * args) {
 	PyObject * packet_capsule;
 	if (!PyArg_ParseTuple(args, "O", &packet_capsule)) {
@@ -982,6 +988,7 @@ static PyMethodDef methods[] = {
 	/* csp/csp_buffer.h */
 	{"buffer_free", pycsp_buffer_free, METH_VARARGS, ""},
 	{"buffer_get", pycsp_buffer_get, METH_VARARGS, ""},
+	{"buffer_get_always", pycsp_buffer_get_always, METH_VARARGS, ""},
 	{"buffer_remaining", pycsp_buffer_remaining, METH_NOARGS, ""},
 
 	/* csp/csp_cmp.h */
