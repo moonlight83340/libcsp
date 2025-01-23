@@ -987,7 +987,7 @@ static PyMethodDef methods[] = {
 
 	/* csp/csp_buffer.h */
 	{"buffer_free", pycsp_buffer_free, METH_VARARGS, ""},
-	{"buffer_get", pycsp_buffer_get, METH_VARARGS, ""},
+	{"buffer_get", pycsp_buffer_get, METH_NOARGS, ""},
 	{"buffer_get_always", pycsp_buffer_get_always, METH_VARARGS, ""},
 	{"buffer_remaining", pycsp_buffer_remaining, METH_NOARGS, ""},
 
