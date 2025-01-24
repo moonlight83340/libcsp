@@ -6,7 +6,7 @@ import threading
 import sys
 import argparse
 import libcsp_py3 as csp
-from typing import Any, Callable
+from typing import Callable
 
 server_received = 0
 server_received_lock = threading.Lock()
