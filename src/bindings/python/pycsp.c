@@ -9,6 +9,7 @@
 #include <csp/drivers/usart.h>
 #include <csp/drivers/can_socketcan.h>
 #include <endian.h>
+#include <csp/csp_crc32.h>
 
 #define SOCKET_CAPSULE     "csp_socket_t"
 #define CONNECTION_CAPSULE "csp_conn_t"
@@ -935,6 +936,44 @@ static PyObject * pycsp_print_interfaces(PyObject * self, PyObject * args) {
 	Py_RETURN_NONE;
 }
 
+static PyObject * pycsp_crc32_init(PyObject * self, PyObject * args) {
+    uint32_t crc = 0;
+
+    if (!PyArg_ParseTuple(args, "I", &crc)) {
+        return NULL; // TypeError is thrown
+    }
+
+    csp_crc32_init(&crc);
+
+    return Py_BuildValue("I", crc);
+}
+
+static PyObject * pycsp_crc32_update(PyObject * self, PyObject * args) {
+    uint32_t crc;
+    Py_buffer data;
+
+    if (!PyArg_ParseTuple(args, "Iy*", &crc, &data)) {
+        return NULL; // TypeError is thrown
+    }
+
+    csp_crc32_update(&crc, data.buf, data.len);
+
+    PyBuffer_Release(&data);
+
+    return Py_BuildValue("I", crc);
+}
+
+static PyObject * pycsp_crc32_final(PyObject * self, PyObject * args) {
+    uint32_t crc;
+
+    if (!PyArg_ParseTuple(args, "I", &crc)) {
+        return NULL; // TypeError is thrown
+    }
+
+    crc = csp_crc32_final(&crc);
+    return Py_BuildValue("I", crc);
+}
+
 static PyMethodDef methods[] = {
 
 	/* csp/csp.h */
@@ -1005,6 +1044,10 @@ static PyMethodDef methods[] = {
 	{"packet_set_data", pycsp_packet_set_data, METH_VARARGS, ""},
 	{"print_connections", pycsp_print_connections, METH_NOARGS, ""},
 	{"print_interfaces", pycsp_print_interfaces, METH_NOARGS, ""},
+	{"crc32_init", pycsp_crc32_init, METH_VARARGS, ""},
+	{"crc32_update", pycsp_crc32_update, METH_VARARGS, ""},
+	{"crc32_final", pycsp_crc32_final, METH_VARARGS, ""},
+	
 
 	/* sentinel */
 	{NULL, NULL, 0, NULL}};
