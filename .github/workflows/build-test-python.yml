@@ -56,6 +56,17 @@ jobs:
         run: |
           meson setup builddir -Denable_python3_bindings=true -Duse_rtable=true && ninja -C builddir
 
+      - name: Run SFP Test
+        run: |
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 1 --size 1 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 1 --size 128 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 1 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 10 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 100 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 1000 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 10000 --rdp
+          PYTHONPATH=builddir python3 examples/csp_sfp_server_client.py --mtu 128 --size 100000 --rdp
+
       - name: Run ZMQ Python binding Test
         run: |
           build/examples/zmqproxy &
