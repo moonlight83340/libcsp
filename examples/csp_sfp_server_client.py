@@ -81,7 +81,10 @@ def receiver(test_opts):
                 print("No more data received, breaking...")
                 break
 
-            data_array = bytearray(data)
+            data_pointer = PyCapsule_GetPointer(data, None)
+            if not data_pointer:
+                raise Exception("Failed to extract data from PyCapsule")
+            data_array = bytearray(data_pointer)
             size = len(data_array)
             print(f"Received data of size {size}")
             write_result, data_crc = write_to_buffer(data_array, size, 0, test_opts.size, None, data_crc)
