@@ -46,6 +46,7 @@ def sender(addr: int, port: int, test_opts):
             if result != csp.CSP_ERR_NONE:
                 raise Exception("Failed to read buffer")
             csp.sfp_send(conn, buffer, len(buffer), test_opts.mtu, 1000)
+            print(f"Send buffer: {buffer}")
 
         sender_crc = csp.crc32_final(data_crc)
         print(f"Sender CRC: {sender_crc}")
@@ -56,7 +57,7 @@ def sender(addr: int, port: int, test_opts):
             csp.close(conn)
 
 
-def receiver(test_opts):
+def receiver(port: int,test_opts):
     global receiver_crc
     data_crc = 0
     conn = None
@@ -67,7 +68,7 @@ def receiver(test_opts):
         print(f"Setting up receiver with options {opts}")
         sock = csp.socket(opts)
         csp.bind(sock, csp.CSP_ANY)
-        csp.listen(sock, 0)
+        csp.listen(sock, port)
 
         print("Waiting for connection")
         conn = csp.accept(sock, 1000)
@@ -77,15 +78,19 @@ def receiver(test_opts):
 
         while True:
             print("Waiting for data...")
-            data, size = csp.sfp_recv(conn, 1000)
-            if data is None:
-                print("No more data received, breaking...")
-                break
-
-            data_pointer = ctypes.cast(data, ctypes.POINTER(ctypes.c_byte))
-            data_array = bytearray(ctypes.string_at(data_pointer, size))
+            result = csp.sfp_recv(conn, 1000)
+            if result is None:
+                print("No data received, breaking...")
+            break
+            
+            data, size = result
+            
             print(f"Received data of size {size}")
-            write_result, data_crc = write_to_buffer(data_array, size, 0, test_opts.size, None, data_crc)
+
+            data_packet=csp.packet_get_data(data)
+            print(f"Received response: {data_packet}")
+            print(f"Received data of size {size}")
+            write_result, data_crc = write_to_buffer(data_packet, size, 0, test_opts.size, None, data_crc)
 
             if write_result != csp.CSP_ERR_NONE:
                 raise Exception("Failed to write buffer")
@@ -118,16 +123,16 @@ def main():
 
     # Threads for server (receiver) and client (sender)
     sender_thread = threading.Thread(target=sender, args=(serv_addr, serv_port, args))
-    receiver_thread = threading.Thread(target=receiver, args=(args,))
+    receiver_thread = threading.Thread(target=receiver, args=(serv_port, args,))
 
     print("Starting server and client threads...")
 
-    sender_thread.start()
-    threading.Event().wait(1)  # Small pause to start the server
     receiver_thread.start()
+    threading.Event().wait(1)  # Small pause to start the server
+    sender_thread.start()
 
-    sender_thread.join()
-    receiver_thread.join()
+    sender_thread.join(100000)
+    receiver_thread.join(100000)
 
     # Check results
     print("Test completed, checking results...")
