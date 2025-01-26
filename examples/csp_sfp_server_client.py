@@ -1,6 +1,7 @@
 import argparse
 import threading
 import random
+import ctypes
 import libcsp_py3 as csp
 
 # Global variables
@@ -76,16 +77,13 @@ def receiver(test_opts):
 
         while True:
             print("Waiting for data...")
-            data = csp.sfp_recv(conn, 1000)
+            data, size = csp.sfp_recv(conn, 1000)
             if data is None:
                 print("No more data received, breaking...")
                 break
 
-            data_pointer = PyCapsule_GetPointer(data, None)
-            if not data_pointer:
-                raise Exception("Failed to extract data from PyCapsule")
-            data_array = bytearray(data_pointer)
-            size = len(data_array)
+            data_pointer = ctypes.cast(data, ctypes.POINTER(ctypes.c_byte))
+            data_array = bytearray(ctypes.string_at(data_pointer, size))
             print(f"Received data of size {size}")
             write_result, data_crc = write_to_buffer(data_array, size, 0, test_opts.size, None, data_crc)
 
