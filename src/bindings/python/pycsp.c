@@ -260,7 +260,10 @@ static PyObject* pycsp_sfp_recv(PyObject *self, PyObject *args) {
         return PyErr_Error("sfp_recv()", res);
     }
 
-    return PyCapsule_New(dataout, PACKET_CAPSULE, pycsp_free_csp_buffer);
+    PyObject* data_capsule = PyCapsule_New(dataout, PACKET_CAPSULE, pycsp_free_csp_buffer);
+    PyObject* size = PyLong_FromLong(return_datasize);
+
+    return PyTuple_Pack(2, data_capsule, size);
 }
 
 static PyObject * pycsp_transaction(PyObject * self, PyObject * args) {
