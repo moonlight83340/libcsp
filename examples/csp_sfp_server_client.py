@@ -95,7 +95,9 @@ def receiver(port: int,test_opts):
             print(f"Received data_buffer {data_buffer}")
 
             data_packet=csp.packet_get_data(data)
+            received_data = bytearray(data_packet)
             print(f"Received response: {data_packet}")
+            print(f"Received response: {received_data}")
             print(f"Received data of size {size}")
             write_result, data_crc = write_to_buffer(data_buffer, size, 0, test_opts.size, None, data_crc)
 
