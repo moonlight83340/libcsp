@@ -128,7 +128,7 @@ def main():
     print("Starting server and client threads...")
 
     receiver_thread.start()
-    threading.Event().wait(1)  # Small pause to start the server
+    time.sleep(1)
     sender_thread.start()
 
     sender_thread.join(100000)
