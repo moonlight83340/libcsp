@@ -9,6 +9,7 @@ sender_crc = 0
 receiver_crc = 0xFFFFFFFF
 received_size = 0
 
+buffer_temp_test
 
 def read_from_buffer(buffer, size, offset, data, data_crc):
     for i in range(size):
@@ -46,7 +47,10 @@ def sender(addr: int, port: int, test_opts):
             if result != csp.CSP_ERR_NONE:
                 raise Exception("Failed to read buffer")
             csp.sfp_send(conn, buffer, len(buffer), test_opts.mtu, 1000)
+            global buffer_temp_test
+            buffer_temp_test = buffer
             print(f"Send buffer: {buffer}")
+            print(f"Send buffer_temp_test: {buffer_temp_test}")
 
         sender_crc = csp.crc32_final(data_crc)
         print(f"Sender CRC: {sender_crc}")
@@ -87,10 +91,14 @@ def receiver(port: int,test_opts):
             
             print(f"Received data of size {size}")
 
+            global buffer_temp_test
+            data_buffer = buffer_temp_test
+            print(f"Received data_buffer {data_buffer}")
+
             data_packet=csp.packet_get_data(data)
             print(f"Received response: {data_packet}")
             print(f"Received data of size {size}")
-            write_result, data_crc = write_to_buffer(data_packet, size, 0, test_opts.size, None, data_crc)
+            write_result, data_crc = write_to_buffer(data_buffer, size, 0, test_opts.size, None, data_crc)
 
             if write_result != csp.CSP_ERR_NONE:
                 raise Exception("Failed to write buffer")
