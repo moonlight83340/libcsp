@@ -9,7 +9,6 @@ sender_crc = 0
 receiver_crc = 0xFFFFFFFF
 received_size = 0
 
-buffer_temp_test
 
 def read_from_buffer(buffer, size, offset, data, data_crc):
     for i in range(size):
