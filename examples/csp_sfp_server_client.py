@@ -128,11 +128,10 @@ def main():
     print("Starting server and client threads...")
 
     receiver_thread.start()
-    time.sleep(1)
     sender_thread.start()
 
-    sender_thread.join(100000)
-    receiver_thread.join(100000)
+    #sender_thread.join(100000)
+    #receiver_thread.join(100000)
 
     # Check results
     print("Test completed, checking results...")
