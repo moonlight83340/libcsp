@@ -81,7 +81,7 @@ def receiver(port: int,test_opts):
             result = csp.sfp_recv(conn, 1000)
             if result is None:
                 print("No data received, breaking...")
-            break
+                break
             
             data, size = result
             
