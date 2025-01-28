@@ -24,6 +24,7 @@ def get_options():
     parser.add_argument("-c", "--can", help="Add CAN interface")
     parser.add_argument("-k", "--kiss", help="Add KISS interface")
     parser.add_argument("-z", "--zmq", help="Add ZMQ interface")
+    parser.add_argument("-e", "--eth", help="Add ETH interface")
     parser.add_argument("-s", "--server-address", type=int, default=27, help="Server address")
     parser.add_argument("-R", "--routing-table", help="Routing table")
     return parser.parse_args(sys.argv[1:])
@@ -58,6 +59,10 @@ if __name__ == "__main__":
     if options.kiss:
         libcsp.kiss_init(options.kiss, options.address)
         libcsp.rtable_load("0/0 KISS")
+
+    if options.eth:
+        libcsp.eth_init(options.eth, options.address)
+        libcsp.rtable_load("0/0 ETH")
 
     if options.routing_table:
         # same format/use as line above
