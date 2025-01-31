@@ -7,6 +7,7 @@
 #include <zephyr/logging/log.h>
 #include <csp/drivers/can_zephyr.h>
 #include <zephyr/device.h>
+#include <zephyr/sys/reboot.h>
 
 LOG_MODULE_REGISTER(csp_sample_server_client);
 
@@ -24,6 +25,11 @@ static uint8_t server_address = 255;
 /* test mode, used for verifying that host & client can exchange packets over the loopback interface */
 static bool test_mode = false;
 static unsigned int server_received = 0;
+
+void csp_panic(const char * msg) {
+	LOG_ERR("csp_panic: %s\n", msg);
+	sys_reboot(SYS_REBOOT_COLD);
+}
 
 /* Server task - handles requests from clients */
 void server(void) {
