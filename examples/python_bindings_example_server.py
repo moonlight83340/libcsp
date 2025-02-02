@@ -24,6 +24,11 @@ def get_options():
     return parser.parse_args()
 
 
+def csp_panic_handler(msg):
+    print("csp_panic : %s" % msg)
+    raise RuntimeError(msg)
+
+
 def csp_server():
     # parameters: {options} - bit flag corresponding to socket options (see "include\csp\csp_types.h" lines 167-180)
     # creates new socket endpoint, returns socket or None
@@ -106,6 +111,8 @@ if __name__ == "__main__":
     # See "include\csp\csp.h" - lines 42-80 for more detail
     # See "src\bindings\python\pycsp.c" - lines 128-156 for more detail
     libcsp.init("test_service", "bindings", "1.2.3")
+
+    libcsp.set_panic_handler(csp_panic_handler)
 
     if options.zmq:
         # add ZMQ interface - (address, host)

@@ -3,6 +3,7 @@
 #include <Python.h>
 
 #include <csp/csp.h>
+#include <csp/csp_hooks.h>
 #include <csp/csp_cmp.h>
 #include <csp/interfaces/csp_if_zmqhub.h>
 #include <csp/interfaces/csp_if_kiss.h>
@@ -15,6 +16,8 @@
 #define PACKET_CAPSULE     "csp_packet_t"
 
 static PyObject * Error = NULL;
+
+static PyObject *python_panic_handler = NULL;
 
 static int CSP_POINTER_HAS_BEEN_FREED = 0;  // used to indicate pointer has been freed, because a NULL pointer can't be set.
 
@@ -943,6 +946,35 @@ static PyObject * pycsp_print_interfaces(PyObject * self, PyObject * args) {
 	Py_RETURN_NONE;
 }
 
+void csp_panic(const char *msg) {
+	if (python_panic_handler && PyCallable_Check(python_panic_handler)) {
+		PyObject *arg = Py_BuildValue("(s)", msg);
+		PyObject_CallObject(python_panic_handler, arg);
+		Py_DECREF(arg);
+	} else {
+		fprintf(stderr, "[CSP PANIC] %s\n", msg);
+		exit(EXIT_FAILURE);
+	}
+}
+
+static PyObject * pycsp_set_panic_handler(PyObject *self, PyObject *args) {
+	PyObject *panic_handler;
+	if (!PyArg_ParseTuple(args, "O", &panic_handler)) {
+		return NULL;
+	}
+
+	if (!PyCallable_Check(panic_handler)) {
+		PyErr_SetString(PyExc_TypeError, "Parameter should be a function");
+		return NULL;
+	}
+
+	Py_XDECREF(python_panic_handler);
+	Py_INCREF(panic_handler);
+	python_panic_handler = panic_handler;
+
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef methods[] = {
 
 	/* csp/csp.h */
@@ -1007,6 +1039,9 @@ static PyMethodDef methods[] = {
 
 	/* csp/drivers/can_socketcan.h */
 	{"can_socketcan_init", pycsp_can_socketcan_init, METH_VARARGS, ""},
+
+	/* csp/csp_cmp.h */
+	{"set_panic_handler", pycsp_set_panic_handler, METH_VARARGS, "Define a callback for csp_panic"},
 
 	/* helpers */
 	{"packet_get_length", pycsp_packet_get_length, METH_O, ""},
