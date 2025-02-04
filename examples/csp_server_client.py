@@ -90,7 +90,6 @@ def client_task(addr: int, port: int) -> None:
 
 def main() -> None:
     global server_received
-    run_duration_in_sec = 3
     options = get_options()
 
     if options.test:
