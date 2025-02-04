@@ -10,6 +10,7 @@ from typing import Any, Callable
 
 server_received = 0
 server_received_lock = threading.Lock()
+stop_event = threading.Event()  # Event to signal threads to stop
 
 
 def get_options():
@@ -41,7 +42,7 @@ def server_task(addr: int, port: int) -> None:
 
     csp.listen(sock, 10)
 
-    while 1:
+    while not stop_event.is_set():
         conn = csp.accept(sock, 10000)
 
         if conn is None:
@@ -65,7 +66,7 @@ def client_task(addr: int, port: int) -> None:
 
     count = ord('A')
 
-    while 1:
+    while not stop_event.is_set():
         time.sleep(1)
 
         ping = csp.ping(addr, 1000, 100, csp.CSP_O_NONE)
@@ -101,22 +102,32 @@ def main() -> None:
 
     serv_addr = 0
     serv_port = 10
+    threads = []
 
     for task in (server_task, client_task):
         t = threading.Thread(target=task, args=(serv_addr, serv_port))
+        threads.append(t)
         t.start()
 
     print("Server and client started")
 
-    if options.test:
-        time.sleep(run_duration_in_sec)
-        with server_received_lock:
-            if server_received < 5:
-                print(f"Server received {server_received} packets. Test failed!")
-                exit(1)
-            elif server_received >= 5:
-                print(f"Server received {server_received} packets. Test passed!")
-                exit(0)
+
+    while not stop_event.is_set():
+        if options.test:
+            time.sleep(run_duration_in_sec)
+            with server_received_lock:
+                if server_received < 5:
+                    print(f"Server received {server_received} packets. Test failed!")
+                    stop_event.set()
+                    for t in threads:
+                        t.join()
+                    exit(1)
+                elif server_received >= 5:
+                    print(f"Server received {server_received} packets. Test passed!")
+                    stop_event.set()
+                    for t in threads:
+                        t.join()
+                    exit(0)
 
 
 if __name__ == '__main__':
