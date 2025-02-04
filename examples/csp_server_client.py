@@ -3,8 +3,24 @@ Usage: LD_LIBRARY_PATH=build PYTHONPATH=build python3 ./examples/csp_server_clie
 """
 import time
 import threading
+import sys
+import argparse
 import libcsp_py3 as csp
 from typing import Any, Callable
+
+server_received = 0
+server_received_lock = threading.Lock()
+
+
+def get_options():
+    parser = argparse.ArgumentParser(description="Parses command.")
+    parser.add_argument(
+        "-t",
+        "--test",
+        type=int,
+        help="Enable test mode and specify duration in seconds",
+    )
+    return parser.parse_args(sys.argv[1:])
 
 
 def printer(node: str, color: str) -> Callable:
@@ -16,6 +32,7 @@ def printer(node: str, color: str) -> Callable:
 
 
 def server_task(addr: int, port: int) -> None:
+    global server_received
     _print = printer('server', '\033[96m')
     _print('Starting server task')
 
@@ -36,6 +53,8 @@ def server_task(addr: int, port: int) -> None:
                     port=port,
                     data=csp.packet_get_data(packet).decode('utf-8'))
                 )
+                with server_received_lock:
+                    server_received += 1
             else:
                 csp.service_handler(conn, packet)
 
@@ -69,6 +88,14 @@ def client_task(addr: int, port: int) -> None:
 
 
 def main() -> None:
+    global server_received
+    run_duration_in_sec = 3
+    options = get_options()
+
+    if options.test:
+        run_duration_in_sec = options.test
+        print(f"Running in test mode for {run_duration_in_sec} seconds...")
+
     csp.init("", "", "")
     csp.route_start_task()
 
@@ -79,7 +106,17 @@ def main() -> None:
         t = threading.Thread(target=task, args=(serv_addr, serv_port))
         t.start()
 
-    print('Server and client started')
+    print("Server and client started")
+
+    if options.test:
+        time.sleep(run_duration_in_sec)
+        with server_received_lock:
+            if server_received < 5:
+                print(f"Server received {server_received} packets. Test failed!")
+                exit(1)
+            elif server_received >= 5:
+                print(f"Server received {server_received} packets. Test passed!")
+                exit(0)
 
 
 if __name__ == '__main__':
