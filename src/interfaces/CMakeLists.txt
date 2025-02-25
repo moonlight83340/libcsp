@@ -21,6 +21,6 @@ if(LIBZMQ_FOUND)
   endif()
 endif()
 
-if(HAVE_SYS_SOCKET_H AND HAVE_ARPA_INET_H)
+if((HAVE_SYS_SOCKET_H AND HAVE_ARPA_INET_H) OR (CSP_ZEPHYR))
   target_sources(csp PRIVATE csp_if_udp.c)
 endif()
