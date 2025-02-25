@@ -167,6 +167,24 @@ config CSP_CAN_RX_THREAD_NUM
 
 endif # CAN
 
+config CSP_UDP_RX_THREAD_PRIORITY
+	int "RX Thread priority in the CSP UDP Driver"
+	default -1
+	help
+	  CSP RX Thread priority in the CSP UDP Driver
+
+config CSP_UDP_RX_THREAD_STACK_SIZE
+	int "RX Thread stack size in the CSP UDP Driver"
+	default 1024
+	help
+	  RX Thread stack size in the CSP UDP Driver
+
+config CSP_UDP_RX_THREAD_NUM
+	int "Number of thread stacks for CSP RX"
+	default 1
+	help
+	  Number of thread stacks for CSP RX
+
 endmenu
 
 endif # LIBCSP

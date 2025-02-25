@@ -1,0 +1,12 @@
+&usart6 {
+    status = "okay";
+    pinctrl-0 = <&usart6_tx_pg14 &usart6_rx_pg9>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    wifi {
+        compatible = "espressif,esp-at";
+        status = "okay";
+        target-speed = <115200>;
+        external-reset;
+    };
+};
