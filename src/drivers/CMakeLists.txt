@@ -23,3 +23,7 @@ endif()
 if(HAVE_ZEPHYR_CAN)
   target_sources(csp PRIVATE can/can_zephyr.c)
 endif()
+
+if(CSP_ZEPHYR)
+  target_sources(csp PRIVATE udp/udp_zephyr.c)
+endif()
