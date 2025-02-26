@@ -11,9 +11,6 @@
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(libcsp, CONFIG_LIBCSP_LOG_LEVEL);
-static K_THREAD_STACK_ARRAY_DEFINE(rx_stack,
-								   CONFIG_CSP_UDP_RX_THREAD_NUM, CONFIG_CSP_UDP_RX_THREAD_STACK_SIZE);
-static uint8_t rx_thread_idx = 0;
 
 static int csp_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
@@ -74,20 +71,16 @@ static void csp_udp_rx(struct net_context * context, struct net_pkt * pkt, union
 	csp_qfifo_write(packet, iface, NULL);
 }
 
-static void csp_udp_rx_loop(void * arg1, void * arg2, void * arg3) {
-	ARG_UNUSED(arg2);
-	ARG_UNUSED(arg3);
-
+static int csp_udp_init_rx(csp_iface_t * iface) {
 	int ret;
 	struct net_if * net_iface;
 
-	csp_iface_t * iface = arg1;
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
 	ret = net_context_get(AF_INET, SOCK_DGRAM, IPPROTO_UDP, &ifconf->udp_ctx);
 	if (ret < 0) {
 		LOG_ERR("Cannot get UDP context (%d)\n", ret);
-		return;
+		return CSP_ERR_DRIVER;
 	}
 
 	struct sockaddr_in server_addr = {0};
@@ -114,14 +107,13 @@ static void csp_udp_rx_loop(void * arg1, void * arg2, void * arg3) {
 		LOG_ERR("Receiving from UDP port failed (%d)\n", ret);
 		goto release_ctx;
 	}
-	return;
-
+	return CSP_ERR_NONE;
 release_ctx:
 	if (net_context_put(ifconf->udp_ctx) < 0) {
 		LOG_ERR("Cannot put UDP context\n");
 	}
 
-	return;
+	return CSP_ERR_DRIVER;
 }
 
 int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
@@ -141,16 +133,8 @@ int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	LOG_INF("UDP peer address: %s:%d (listening on port %d)\n", ip_str, ifconf->rport, ifconf->lport);
 
-	/* Start server thread */
-	k_tid_t rx_tid = k_thread_create(&ifconf->server_handle, rx_stack[rx_thread_idx],
-									 K_THREAD_STACK_SIZEOF(rx_stack[rx_thread_idx]),
-									 (k_thread_entry_t)csp_udp_rx_loop, iface, NULL, NULL,
-									 CONFIG_CSP_UDP_RX_THREAD_PRIORITY, 0, K_NO_WAIT);
-	if (!rx_tid) {
-		LOG_ERR("[UDP] k_thread_create() failed");
-		return CSP_ERR_DRIVER;
-	}
-	rx_thread_idx++;
+	/* Init udp rx */
+	csp_udp_init_rx(iface);
 
 	/* Register interface */
 	iface->name = CSP_IF_UDP_DEFAULT_NAME,
@@ -158,4 +142,24 @@ int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	csp_iflist_add(iface);
 
 	return CSP_ERR_NONE;
+}
+
+int csp_udp_stop_rx(csp_iface_t * iface) {
+	csp_if_udp_conf_t * ifconf = iface->driver_data;
+
+	if (ifconf->udp_ctx) {
+		/* Stop the rx thread */
+		net_context_recv(ifconf->udp_ctx, NULL, K_NO_WAIT, NULL);
+
+		/* Free the net context */
+		net_context_put(ifconf->udp_ctx);
+		ifconf->udp_ctx = NULL;
+		LOG_INF("UDP reception stopped");
+
+		/* Remove the interface */
+		csp_iflist_remove(iface);
+		return CSP_ERR_NONE;
+	}
+	LOG_ERR("NO UDP context to stop");
+	return CSP_ERR_DRIVER;
 }

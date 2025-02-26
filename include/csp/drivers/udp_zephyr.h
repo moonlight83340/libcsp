@@ -47,6 +47,16 @@ typedef struct {
  */
 int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
 
+/**
+ * @brief Stop receiving UDP packets on the specified interface.
+ *
+ * This function stops the reception of UDP packets on the given CSP interface.
+ *
+ * @param[in] iface Pointer to the CSP interface on which to stop receiving UDP packets.
+ * @return #CSP_ERR_NONE on success, otherwise an error code.
+ */
+int csp_udp_stop_rx(csp_iface_t * iface);
+
 #ifdef __cplusplus
 }
 #endif
