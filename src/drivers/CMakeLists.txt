@@ -19,12 +19,9 @@ if(CSP_POSIX)
 elseif(CSP_ZEPHYR)
   target_sources(csp PRIVATE usart/usart_zephyr.c)
   target_sources(csp PRIVATE eth/eth_zephyr.c)
+  target_sources(csp PRIVATE udp/udp_zephyr.c)
 endif()
 
 if(HAVE_ZEPHYR_CAN)
   target_sources(csp PRIVATE can/can_zephyr.c)
-endif()
-
-if(CSP_ZEPHYR)
-  target_sources(csp PRIVATE udp/udp_zephyr.c)
 endif()
