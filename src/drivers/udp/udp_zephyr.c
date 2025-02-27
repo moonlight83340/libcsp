@@ -134,7 +134,10 @@ int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	LOG_INF("UDP peer address: %s:%d (listening on port %d)\n", ip_str, ifconf->rport, ifconf->lport);
 
 	/* Init udp rx */
-	csp_udp_init_rx(iface);
+	if(csp_udp_init_rx(iface) != CSP_ERR_NONE) {
+		LOG_ERR("Failed to init UDP RX");
+		return CSP_ERR_DRIVER;
+	}
 
 	/* Register interface */
 	iface->name = CSP_IF_UDP_DEFAULT_NAME,
@@ -160,6 +163,6 @@ int csp_udp_stop_rx(csp_iface_t * iface) {
 		csp_iflist_remove(iface);
 		return CSP_ERR_NONE;
 	}
-	LOG_ERR("NO UDP context to stop");
+	LOG_ERR("No UDP context to stop");
 	return CSP_ERR_DRIVER;
 }
