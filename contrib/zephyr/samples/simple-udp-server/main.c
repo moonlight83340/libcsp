@@ -27,7 +27,7 @@ static unsigned int server_received = 0;
 /* Server task - handles requests from clients */
 void server(void) {
 
- 	LOG_INF("Server task started");
+	LOG_INF("Server task started");
 
 	csp_iface_t iface;
 	csp_if_udp_conf_t conf;
@@ -37,10 +37,10 @@ void server(void) {
 	conf.lport = DEFAULT_UDP_LOCAL_PORT;
 	conf.rport = DEFAULT_UDP_REMOTE_PORT;
 	csp_udp_init(&iface, &conf);
-    iface.addr = SERVER_ADDR;
+	iface.addr = SERVER_ADDR;
 
 	csp_socket_t sock = {0};
-	csp_packet_t *packet;
+	csp_packet_t * packet;
 
 	sock.opts = CSP_SO_CONN_LESS;
 
@@ -50,7 +50,7 @@ void server(void) {
 	/* Create a backlog of 10 connections, i.e. up to 10 new connections can be queued */
 	csp_listen(&sock, 10);
 
- 	/* Wait for connections and then process packets on the connection */
+	/* Wait for connections and then process packets on the connection */
 	while (1) {
 		packet = csp_recvfrom(&sock, 1000);
 		if (packet == NULL) {
@@ -62,8 +62,8 @@ void server(void) {
 
 		csp_buffer_free(packet);
 	}
-	
- 	return;
+
+	return;
 }
 /* End of server task */
 
@@ -82,24 +82,24 @@ int main(void) {
 	router_start();
 
 	/* Start server thread */
- 	server_start();
+	server_start();
 
- 	/* Wait for execution to end (ctrl+c) */
- 	while(1) {
- 		k_sleep(K_SECONDS(3));
+	/* Wait for execution to end (ctrl+c) */
+	while (1) {
+		k_sleep(K_SECONDS(3));
 
- 		if (test_mode) {
- 			/* Test mode is intended for checking that host & client can exchange packets over loopback */
+		if (test_mode) {
+			/* Test mode is intended for checking that host & client can exchange packets over loopback */
 			if (server_received < 5) {
- 				LOG_INF("Server received %u packets", server_received);
- 				ret = 1;
- 				goto end;
- 			}
+				LOG_INF("Server received %u packets", server_received);
+				ret = 1;
+				goto end;
+			}
 			LOG_INF("Server received %u packets", server_received);
 			ret = 0;
 			goto end;
- 		}
- 	}
+		}
+	}
 
 end:
 	return ret;

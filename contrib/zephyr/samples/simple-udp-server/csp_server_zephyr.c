@@ -5,8 +5,8 @@ void server(void);
 
 #define ROUTER_STACK_SIZE 256
 #define SERVER_STACK_SIZE 2048
-#define ROUTER_PRIO 0
-#define SERVER_PRIO 0
+#define ROUTER_PRIO       0
+#define SERVER_PRIO       0
 
 static void * router_task(void * param) {
 
