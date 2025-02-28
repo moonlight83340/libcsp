@@ -92,7 +92,6 @@ int csp_eth_init_rx(eth_context_t * ctx) {
 	ret = net_context_bind(ctx->eth_ctx, (struct sockaddr *)&local_addr, sizeof(struct sockaddr_ll));
 	if (ret < 0) {
 		LOG_ERR("Failed to bind net_context");
-		k_free(ctx);
 		return CSP_ERR_DRIVER;
 	}
 
@@ -153,11 +152,34 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
 		return CSP_ERR_DRIVER;
 	}
 
+	/* Get the MAC address of the interface to send on */
+	struct net_if * iface = net_if_get_by_index(ctx->if_index);
+	if (!iface) {
+		printf("No network interface found for index %d\n", ctx->if_index);
+        k_free(ctx);
+		return CSP_ERR_DRIVER;
+	}
+
+	struct net_linkaddr * link_addr = net_if_get_link_addr(iface);
+	if (!link_addr || link_addr->len != 6) {
+		printf("MAC address not available or invalid\n");
+        k_free(ctx);
+		return CSP_ERR_DRIVER;
+	}
+
+	memcpy(ctx->ifdata.if_mac, link_addr->addr, sizeof(ctx->ifdata.if_mac));
+
+	LOG_INF("INIT %s idx %d node %d mac %02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx\n",
+			ifname, net_if_get_by_iface(iface), node_id,
+			ctx->ifdata.if_mac[0], ctx->ifdata.if_mac[1], ctx->ifdata.if_mac[2],
+			ctx->ifdata.if_mac[3], ctx->ifdata.if_mac[4], ctx->ifdata.if_mac[5]);
+
 	ctx->ifdata.tx_mtu = mtu;
 
 	/* Init eth rx */
-    if(csp_eth_init_rx(ctx) != CSP_ERR_NONE) {
+	if (csp_eth_init_rx(ctx) != CSP_ERR_NONE) {
 		LOG_ERR("Failed to init ETH RX");
+        k_free(ctx);
 		return CSP_ERR_DRIVER;
 	}
 
