@@ -25,23 +25,22 @@ int main(void) {
 	csp_init();
 	csp_conf.version = 2;
 
-    /* Interface config */
-    csp_iface_t iface;
-    csp_if_udp_conf_t conf = {
-        .host = DEFAULT_UDP_ADDRESS,
-        .lport = DEFAULT_UDP_LOCAL_PORT,
-        .rport = DEFAULT_UDP_REMOTE_PORT
-    };
+	/* Interface config */
+	csp_iface_t iface;
+	csp_if_udp_conf_t conf = {
+		.host = DEFAULT_UDP_ADDRESS,
+		.lport = DEFAULT_UDP_LOCAL_PORT,
+		.rport = DEFAULT_UDP_REMOTE_PORT};
 
-    csp_udp_init(&iface, &conf);
-    iface.is_default = 1;
+	csp_udp_init(&iface, &conf);
+	iface.is_default = 1;
 	iface.addr = CLIENT_ADDR;
 
 	while (1) {
 		k_sleep(K_USEC(1000000));
 
 		/* Prepare data */
-		csp_packet_t *packet = csp_buffer_get_always();
+		csp_packet_t * packet = csp_buffer_get_always();
 		memcpy(packet->data, "abc", 3);
 		packet->length = 3;
 
