@@ -1,17 +1,11 @@
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-
 #include <csp/csp.h>
-#include <zephyr/logging/log.h>
 #include <csp/drivers/udp_zephyr.h>
-#include <zephyr/device.h>
 
-#include <zephyr/kernel.h>
-#include <errno.h>
-#include <zephyr/device.h>
-#include <zephyr/net/net_mgmt.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/net/net_mgmt.h>
 
 LOG_MODULE_REGISTER(csp_sample_server_client);
 
