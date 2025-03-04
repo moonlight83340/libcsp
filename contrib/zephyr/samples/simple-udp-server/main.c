@@ -1,20 +1,18 @@
 #include <csp/csp.h>
 #include <csp/drivers/udp_zephyr.h>
 
-#include <zephyr/logging/log.h>
 #include <zephyr/device.h>
-#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net/net_mgmt.h>
 
 LOG_MODULE_REGISTER(csp_sample_udp_server);
 
-#define SERVER_ADDR 5
-#define SERVER_PORT 10
+#define SERVER_ADDR    5
+#define MY_SERVER_PORT 10
 
 #define DEFAULT_UDP_ADDRESS     "192.168.3.3"
 #define DEFAULT_UDP_REMOTE_PORT 1500
-#define DEFAULT_UDP_LOCAL_PORT  55984
+#define DEFAULT_UDP_LOCAL_PORT  1501
 
 /* These two functions must be provided in arch specific way */
 void router_start(void);
@@ -24,25 +22,12 @@ void server_start(void);
 static bool test_mode = false;
 static unsigned int server_received = 0;
 
-/* Server task - handles requests from clients */
 void server(void) {
 
 	LOG_INF("Server task started");
 
-	csp_iface_t iface;
-	csp_if_udp_conf_t conf;
-
-	/* open */
-	conf.host = DEFAULT_UDP_ADDRESS;
-	conf.lport = DEFAULT_UDP_LOCAL_PORT;
-	conf.rport = DEFAULT_UDP_REMOTE_PORT;
-	csp_udp_init(&iface, &conf);
-	iface.addr = SERVER_ADDR;
-
+	/* Create socket with no specific socket options, e.g. accepts CRC32, HMAC, etc. if enabled during compilation */
 	csp_socket_t sock = {0};
-	csp_packet_t * packet;
-
-	sock.opts = CSP_SO_CONN_LESS;
 
 	/* Bind socket to all ports, e.g. all incoming connections will be handled here */
 	csp_bind(&sock, CSP_ANY);
@@ -52,15 +37,34 @@ void server(void) {
 
 	/* Wait for connections and then process packets on the connection */
 	while (1) {
-		packet = csp_recvfrom(&sock, 1000);
-		if (packet == NULL) {
+
+		/* Wait for a new connection, 10000 mS timeout */
+		csp_conn_t * conn;
+		if ((conn = csp_accept(&sock, 10000)) == NULL) {
+			/* timeout */
 			continue;
 		}
 
-		printf("Packet received : %s\n", packet->data);
-		server_received++;
+		/* Read packets on connection, timout is 100 mS */
+		csp_packet_t * packet;
+		while ((packet = csp_read(conn, 50)) != NULL) {
+			switch (csp_conn_dport(conn)) {
+				case MY_SERVER_PORT:
+					/* Process packet here */
+					LOG_INF("Packet received on MY_SERVER_PORT: %s", (char *)packet->data);
+					csp_buffer_free(packet);
+					++server_received;
+					break;
 
-		csp_buffer_free(packet);
+				default:
+					/* Call the default CSP service handler, handle pings, buffer use, etc. */
+					csp_service_handler(packet);
+					break;
+			}
+		}
+
+		/* Close current connection */
+		csp_close(conn);
 	}
 
 	return;
@@ -76,7 +80,14 @@ int main(void) {
 	/* Init CSP */
 	csp_init();
 
-	csp_conf.version = 2;
+	csp_iface_t iface;
+	csp_if_udp_conf_t conf;
+
+	conf.host = DEFAULT_UDP_ADDRESS;
+	conf.lport = DEFAULT_UDP_LOCAL_PORT;
+	conf.rport = DEFAULT_UDP_REMOTE_PORT;
+	csp_udp_init(&iface, &conf);
+	iface.addr = SERVER_ADDR;
 
 	/* Start router */
 	router_start();
@@ -89,9 +100,10 @@ int main(void) {
 		k_sleep(K_SECONDS(3));
 
 		if (test_mode) {
-			/* Test mode is intended for checking that host & client can exchange packets over loopback */
+			/* Test mode is intended for checking that host & client can exchange packets */
 			if (server_received < 5) {
 				LOG_INF("Server received %u packets", server_received);
+				csp_udp_stop_rx(&iface);
 				ret = 1;
 				goto end;
 			}
