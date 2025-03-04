@@ -14,16 +14,18 @@ LOG_MODULE_REGISTER(csp_sample_server_client);
 #define SERVER_PORT 10
 
 #define DEFAULT_UDP_ADDRESS     "192.168.3.13"
-#define DEFAULT_UDP_REMOTE_PORT 1500
+#define DEFAULT_UDP_REMOTE_PORT 1501
 #define DEFAULT_UDP_LOCAL_PORT  1500
 
 /* main - initialization of CSP and start of client tasks */
 int main(void) {
+	csp_conn_t * conn;
+	csp_packet_t * packet;
+
 	LOG_INF("Initialising CSP");
 
 	/* Init CSP */
 	csp_init();
-	csp_conf.version = 2;
 
 	/* Interface config */
 	csp_iface_t iface;
@@ -39,13 +41,23 @@ int main(void) {
 	while (1) {
 		k_sleep(K_USEC(1000000));
 
-		/* Prepare data */
-		csp_packet_t * packet = csp_buffer_get_always();
+		/* connect */
+		conn = csp_connect(CSP_PRIO_NORM, SERVER_ADDR, SERVER_PORT, 1000, CSP_O_NONE);
+		if (conn == NULL) {
+			csp_print("Connection failed\n");
+			return 1;
+		}
+
+		/* prepare data */
+		packet = csp_buffer_get_always();
 		memcpy(packet->data, "abc", 3);
 		packet->length = 3;
 
-		/* Send */
-		csp_sendto(CSP_PRIO_NORM, SERVER_ADDR, SERVER_PORT, SERVER_PORT, CSP_O_NONE, packet);
+		/* send */
+		csp_send(conn, packet);
+
+		/* close */
+		csp_close(conn);
 	}
 
 	return 0;
