@@ -7,8 +7,13 @@
 
 #include <csp/csp.h>
 
+#if (CSP_ZEPHYR)
+#include <zephyr/kernel.h>
+#include <zephyr/net/socket.h>
+#else
 #include <pthread.h>
 #include <netinet/in.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +27,11 @@ typedef struct {
 	int rport;
 
 	/* Internal parameters */
+	#if (CSP_ZEPHYR)
+	struct k_thread server_handle;
+	#else
 	pthread_t server_handle;
+	#endif
 	struct sockaddr_in peer_addr;
 
 	int sockfd;
