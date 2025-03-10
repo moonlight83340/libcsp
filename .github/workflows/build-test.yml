@@ -94,6 +94,11 @@ jobs:
           ./build/examples/csp_client -k /tmp/pty2 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
           pkill socat
 
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
+
       - name: Run KISS Server Test
         run: |
           socat -d -d -d pty,raw,echo=0,link=/tmp/pty1 pty,raw,echo=0,link=/tmp/pty2 &
@@ -102,6 +107,11 @@ jobs:
           ./build/examples/csp_server -k /tmp/pty1 -a 1 -t -v ${{ matrix.csp_version }}
           pkill socat
 
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
+
       - name: Run ZMQ Client Test
         run: |
           ./build/examples/zmqproxy &
@@ -109,12 +119,22 @@ jobs:
           ./build/examples/csp_client -z localhost -a 2 -C 1 -t -v ${{ matrix.csp_version }}
           pkill zmqproxy
 
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
+
       - name: Run ZMQ Server Test
         run: |
           ./build/examples/zmqproxy &
           ./build/examples/csp_client -z localhost -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
           ./build/examples/csp_server -z localhost -a 1 -t -v ${{ matrix.csp_version }}
           pkill zmqproxy
+
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
 
       - name: Setup vcan0
         run: |
@@ -132,7 +152,18 @@ jobs:
           ./build/examples/csp_server -c vcan0 -a 1 -T 10 -v ${{ matrix.csp_version }} &
           ./build/examples/csp_client -c vcan0 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
 
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
+
       - name: Run CAN Client Test
         run: |
           ./build/examples/csp_client -c vcan0 -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
           ./build/examples/csp_server -c vcan0 -a 1 -t -v ${{ matrix.csp_version }}
+
+      - name: Check running process
+        run: |
+          ps aux | grep csp_server
+          ps aux | grep csp_client
+
