@@ -20,7 +20,3 @@ if(LIBZMQ_FOUND)
     set_property(TARGET if_zmq PROPERTY POSITION_INDEPENDENT_CODE ON)
   endif()
 endif()
-
-if(HAVE_SYS_SOCKET_H AND HAVE_ARPA_INET_H)
-  target_sources(csp PRIVATE csp_if_udp.c)
-endif()

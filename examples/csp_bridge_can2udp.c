@@ -6,7 +6,7 @@
 #include <csp/csp.h>
 #include <csp/csp_debug.h>
 #include <csp/drivers/can_socketcan.h>
-#include <csp/interfaces/csp_if_udp.h>
+#include <csp/drivers/udp_socket.h>
 
 #define DEFAULT_CAN_NAME		"can0"
 #define DEFAULT_UDP_ADDRESS		"127.0.0.1"
