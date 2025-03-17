@@ -6,12 +6,12 @@
 #include <csp/csp.h>
 #include <csp/csp_debug.h>
 #include <csp/drivers/can_socketcan.h>
-#include <csp/interfaces/csp_if_udp.h>
+#include <csp/drivers/udp_socket.h>
 
-#define DEFAULT_CAN_NAME		"can0"
-#define DEFAULT_UDP_ADDRESS		"127.0.0.1"
-#define DEFAULT_UDP_REMOTE_PORT	(0)
-#define DEFAULT_UDP_LOCAL_PORT	(0)
+#define DEFAULT_CAN_NAME        "can0"
+#define DEFAULT_UDP_ADDRESS     "127.0.0.1"
+#define DEFAULT_UDP_REMOTE_PORT (0)
+#define DEFAULT_UDP_LOCAL_PORT  (0)
 
 static struct option long_options[] = {
 	{"can", required_argument, 0, 'c'},
@@ -20,8 +20,7 @@ static struct option long_options[] = {
 	{"local-port", required_argument, 0, 'l'},
 	{"protocol-version", required_argument, 0, 'v'},
 	{"help", no_argument, 0, 'h'},
-	{0, 0, 0, 0}
-};
+	{0, 0, 0, 0}};
 
 /* Overwrite input hook to print packet information */
 void csp_input_hook(csp_iface_t * iface, csp_packet_t * packet) {
@@ -40,15 +39,15 @@ void csp_input_hook(csp_iface_t * iface, csp_packet_t * packet) {
 static void print_help(void) {
 	csp_print("Usage: csp_bridge_can2udp [options]\n");
 	csp_print(" --can                           set CAN interface\n");
-	csp_print(" --remote-address <address>      set UDP remote address\n"
-			  " --remote-port <port>            set UDP remote port\n"
-			  " --local-port <port>             set UDP local port\n"
-			  " -v,--protocol-version <version> set protocol version\n"
-			  " -h,--help                       print help\n");
+	csp_print(
+		" --remote-address <address>      set UDP remote address\n"
+		" --remote-port <port>            set UDP remote port\n"
+		" --local-port <port>             set UDP local port\n"
+		" -v,--protocol-version <version> set protocol version\n"
+		" -h,--help                       print help\n");
 }
 
-static csp_iface_t * add_can_iface(const char * can_name)
-{
+static csp_iface_t * add_can_iface(const char * can_name) {
 	csp_iface_t * iface = NULL;
 
 	int error = csp_can_socketcan_open_and_add_interface(can_name, CSP_IF_CAN_DEFAULT_NAME,
@@ -61,8 +60,7 @@ static csp_iface_t * add_can_iface(const char * can_name)
 	return iface;
 }
 
-static csp_iface_t * add_udp_iface(char * address, int lport, int rport)
-{
+static csp_iface_t * add_udp_iface(char * address, int lport, int rport) {
 	csp_iface_t * iface = malloc(sizeof(csp_iface_t));
 	csp_if_udp_conf_t * conf = malloc(sizeof(csp_if_udp_conf_t));
 
@@ -129,7 +127,7 @@ int main(int argc, char * argv[]) {
 	csp_iflist_print();
 
 	/* Start bridge */
-	while(1) {
+	while (1) {
 		csp_bridge_work();
 	}
 

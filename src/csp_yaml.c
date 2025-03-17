@@ -8,7 +8,7 @@
 #include <csp/interfaces/csp_if_can.h>
 #include <csp/interfaces/csp_if_lo.h>
 #include <csp/interfaces/csp_if_tun.h>
-#include <csp/interfaces/csp_if_udp.h>
+#include <csp/drivers/udp_socket.h>
 #include <csp/drivers/can_socketcan.h>
 #include <csp/drivers/usart.h>
 #include <csp/csp_debug.h>
@@ -55,7 +55,7 @@ static void csp_yaml_end_if(struct data_s * data, unsigned int * dfl_addr) {
 	}
 
 	/* UART */
-    if (strcmp(data->driver, "kiss") == 0) {
+	if (strcmp(data->driver, "kiss") == 0) {
 
 		/* Check for valid options */
 		if (!data->baudrate) {
@@ -113,8 +113,7 @@ static void csp_yaml_end_if(struct data_s * data, unsigned int * dfl_addr) {
 
 #if (CSP_HAVE_LIBZMQ)
 	/* ZMQ */
-    else if (strcmp(data->driver, "zmq") == 0) {
-		
+	else if (strcmp(data->driver, "zmq") == 0) {
 
 		/* Check for valid server */
 		if (!data->server) {
@@ -151,11 +150,11 @@ static void csp_yaml_end_if(struct data_s * data, unsigned int * dfl_addr) {
 	}
 #endif
 
-    /* Unsupported interface */
+	/* Unsupported interface */
 	else {
-        csp_print("Unsupported driver %s\n", data->driver);
-        return;
-    }
+		csp_print("Unsupported driver %s\n", data->driver);
+		return;
+	}
 
 	iface->addr = addr;
 	iface->netmask = atoi(data->netmask);
@@ -163,7 +162,6 @@ static void csp_yaml_end_if(struct data_s * data, unsigned int * dfl_addr) {
 	iface->is_default = (data->is_dfl) ? 1 : 0;
 
 	csp_print("  %s addr: %u netmask %u %s\n", iface->name, iface->addr, iface->netmask, (iface->is_default) ? "DFL" : "");
-
 }
 
 static void csp_yaml_key_value(struct data_s * data, char * key, char * value) {
@@ -201,7 +199,7 @@ static void csp_yaml_key_value(struct data_s * data, char * key, char * value) {
 
 void csp_yaml_init(char * filename, unsigned int * dfl_addr) {
 
-    struct data_s data;
+	struct data_s data;
 
 	csp_print("  Reading config from %s\n", filename);
 	FILE * file = fopen(filename, "rb");
@@ -261,11 +259,11 @@ void csp_yaml_init(char * filename, unsigned int * dfl_addr) {
 		}
 
 		if (event.type == YAML_SCALAR_EVENT) {
-			
+
 			/* Got key, parse the value too */
 			yaml_event_t event_val;
 			yaml_parser_parse(&parser, &event_val);
-			csp_yaml_key_value(&data, (char *) event.data.scalar.value, (char *) event_val.data.scalar.value);
+			csp_yaml_key_value(&data, (char *)event.data.scalar.value, (char *)event_val.data.scalar.value);
 			yaml_event_delete(&event_val);
 
 			yaml_event_delete(&event);
@@ -291,5 +289,4 @@ void csp_yaml_init(char * filename, unsigned int * dfl_addr) {
 	free(data.listen_port);
 	free(data.remote_port);
 	free(data.promisc);
-
 }

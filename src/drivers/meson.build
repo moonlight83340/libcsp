@@ -12,3 +12,7 @@ if host_machine.system() == 'linux'
 	csp_sources += files(['usart/usart_linux.c'])
 	csp_sources += files(['usart/usart_kiss.c'])
 endif
+
+if cc.has_header('sys/socket.h') and cc.has_header('arpa/inet.h')
+	csp_sources += files(['udp/udp_socket.c'])
+endif
