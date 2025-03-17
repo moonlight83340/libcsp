@@ -69,22 +69,31 @@ void * csp_if_udp_rx_loop(void * param) {
 	csp_iface_t * iface = param;
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
-	while (ifconf->sockfd == 0) {
+	while (ifconf->sockfd <= 0) {
 
-		ifconf->sockfd = socket(AF_INET, SOCK_DGRAM, PF_PACKET);
+		ifconf->sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+		if (ifconf->sockfd < 0) {
+			csp_print("UDP server: socket creation failed, retrying...\n");
+			sleep(1);
+			continue;
+		}
 
 		struct sockaddr_in server_addr = {0};
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		server_addr.sin_port = htons(ifconf->lport);
 
-		bind(ifconf->sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+		int ret = bind(ifconf->sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-		if (ifconf->sockfd < 0) {
-			csp_print("  UDP server waiting for port %d\n", ifconf->lport);
+		if (ret < 0) {
+			csp_print("UDP server: waiting for port %d\n", ifconf->lport);
+			close(ifconf->sockfd);
+			ifconf->sockfd = -1;
 			sleep(1);
 			continue;
 		}
+
 		break;
 	}
 
@@ -108,11 +117,11 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	iface->driver_data = ifconf;
 
-	if (inet_aton(ifconf->host, &ifconf->peer_addr.sin_addr) == 0) {
-		csp_print("  Unknown peer address %s\n", ifconf->host);
+	if (inet_pton(AF_INET, ifconf->host, &ifconf->peer_addr.sin_addr) == 0) {
+		csp_print("Invalid peer address: %s", ifconf->host);
 	}
 
-	csp_print("  UDP peer address: %s:%d (listening on port %d)\n", inet_ntoa(ifconf->peer_addr.sin_addr), ifconf->rport, ifconf->lport);
+	csp_print("UDP peer address: %s:%d (listening on port %d)\n", inet_ntoa(ifconf->peer_addr.sin_addr), ifconf->rport, ifconf->lport);
 
 	/* Start server thread */
 	ret = pthread_attr_init(&attributes);
@@ -123,6 +132,7 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_attr_setdetachstate failed: %s: %d\n", strerror(ret), ret);
 	}
+
 	ret = pthread_create(&ifconf->server_handle, &attributes, csp_if_udp_rx_loop, iface);
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_create failed: %s: %d\n", strerror(ret), ret);
