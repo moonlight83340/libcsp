@@ -71,7 +71,20 @@ static void csp_udp_rx(struct net_context * context, struct net_pkt * pkt, union
 	csp_qfifo_write(packet, iface, NULL);
 }
 
-static int csp_udp_init_rx(csp_iface_t * iface) {
+/**
+ * @brief Setup UDP context for the given CSP interface.
+ *
+ * This function initializes and configures a net context for UDP for the specified
+ * CSP interface. It performs the following steps:
+ * 1. Obtains a UDP context (net context).
+ * 2. Configures the server address and selects the appropriate network interface.
+ * 3. Binds the UDP context to the specified local port.
+ * 4. Sets the UDP receive callback function.
+ *
+ * @param iface Pointer to the CSP interface structure.
+ * @return CSP_ERR_NONE on success, CSP_ERR_DRIVER on failure.
+ */
+static int csp_udp_setup_context(csp_iface_t * iface) {
 	int ret;
 	struct net_if * net_iface;
 
@@ -104,7 +117,7 @@ static int csp_udp_init_rx(csp_iface_t * iface) {
 
 	ret = net_context_recv(ifconf->udp_ctx, csp_udp_rx, K_NO_WAIT, iface);
 	if (ret < 0) {
-		LOG_ERR("Receiving from UDP port failed (%d)\n", ret);
+		LOG_ERR("Setting udp rx callback failed (%d)\n", ret);
 		goto release_ctx;
 	}
 	return CSP_ERR_NONE;
@@ -133,9 +146,8 @@ int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	LOG_INF("UDP peer address: %s:%d (listening on port %d)\n", ip_str, ifconf->rport, ifconf->lport);
 
-	/* Init udp rx */
-	if (csp_udp_init_rx(iface) != CSP_ERR_NONE) {
-		LOG_ERR("Failed to init UDP RX");
+	if (csp_udp_setup_context(iface) != CSP_ERR_NONE) {
+		LOG_ERR("Failed to setup UDP context\n");
 		return CSP_ERR_DRIVER;
 	}
 
@@ -147,17 +159,17 @@ int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	return CSP_ERR_NONE;
 }
 
-int csp_udp_stop_rx(csp_iface_t * iface) {
+int csp_udp_stop(csp_iface_t * iface) {
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
 	if (ifconf->udp_ctx) {
-		/* Stop the rx thread */
+		/* Stop the rx callback, no more udp packet are received */
 		net_context_recv(ifconf->udp_ctx, NULL, K_NO_WAIT, NULL);
+		LOG_INF("UDP reception stopped");
 
-		/* Free the net context */
+		/* Free the net context, udp stopped */
 		net_context_put(ifconf->udp_ctx);
 		ifconf->udp_ctx = NULL;
-		LOG_INF("UDP reception stopped");
 
 		/* Remove the interface */
 		csp_iflist_remove(iface);
