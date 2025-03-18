@@ -110,7 +110,7 @@ void * csp_if_udp_rx_loop(void * param) {
 	return NULL;
 }
 
-void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
+int csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	pthread_attr_t attributes;
 	int ret;
@@ -119,6 +119,7 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	if (inet_pton(AF_INET, ifconf->host, &ifconf->peer_addr.sin_addr) == 0) {
 		csp_print("Invalid peer address: %s", ifconf->host);
+		return CSP_ERR_INVAL;
 	}
 
 	csp_print("UDP peer address: %s:%d (listening on port %d)\n", inet_ntoa(ifconf->peer_addr.sin_addr), ifconf->rport, ifconf->lport);
@@ -127,23 +128,29 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	ret = pthread_attr_init(&attributes);
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_attr_init failed: %s: %d\n", strerror(ret), ret);
+		return CSP_ERR_DRIVER;
 	}
 	ret = pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_attr_setdetachstate failed: %s: %d\n", strerror(ret), ret);
+		return CSP_ERR_DRIVER;
 	}
 
 	ret = pthread_create(&ifconf->server_handle, &attributes, csp_if_udp_rx_loop, iface);
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_create failed: %s: %d\n", strerror(ret), ret);
+		return CSP_ERR_DRIVER;
 	}
+
 	ret = pthread_attr_destroy(&attributes);
 	if (ret != 0) {
 		csp_print("csp_if_udp_init: pthread_attr_destroy failed: %s: %d\n", strerror(ret), ret);
+		return CSP_ERR_DRIVER;
 	}
 
 	/* Regsiter interface */
 	iface->name = "UDP",
 	iface->nexthop = csp_if_udp_tx,
 	csp_iflist_add(iface);
+	return CSP_ERR_NONE;
 }
