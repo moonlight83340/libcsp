@@ -16,7 +16,7 @@ extern "C" {
 
 typedef struct {
 
-	/* Should be set before calling if_udp_init */
+	/* Should be set before calling csp_udp_init */
 	char * host;
 	int lport;
 	int rport;
@@ -39,7 +39,7 @@ typedef struct {
  * TX peer:
  *   Outgoing CSP packets will be transferred to the peer specified by the host argument
  */
-void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
+void csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
 
 #ifdef __cplusplus
 }

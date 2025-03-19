@@ -16,7 +16,7 @@
 #define MSG_CONFIRM (0)
 #endif
 
-static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
+static int csp_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
 
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
@@ -35,7 +35,7 @@ static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packe
 	return CSP_ERR_NONE;
 }
 
-int csp_if_udp_rx_work(int sockfd, size_t unused, csp_iface_t * iface) {
+int csp_udp_rx_work(int sockfd, size_t unused, csp_iface_t * iface) {
 
 	csp_packet_t * packet = csp_buffer_get(0);
 	if (packet == NULL) {
@@ -64,7 +64,7 @@ int csp_if_udp_rx_work(int sockfd, size_t unused, csp_iface_t * iface) {
 	return CSP_ERR_NONE;
 }
 
-void * csp_if_udp_rx_loop(void * param) {
+void * csp_udp_rx_loop(void * param) {
 
 	csp_iface_t * iface = param;
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
@@ -90,7 +90,7 @@ void * csp_if_udp_rx_loop(void * param) {
 
 	while (1) {
 		int ret;
-		ret = csp_if_udp_rx_work(ifconf->sockfd, 0, iface);
+		ret = csp_udp_rx_work(ifconf->sockfd, 0, iface);
 		if (ret == CSP_ERR_INVAL) {
 			iface->rx_error++;
 		} else if (ret == CSP_ERR_NOMEM) {
@@ -101,7 +101,7 @@ void * csp_if_udp_rx_loop(void * param) {
 	return NULL;
 }
 
-void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
+void csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 
 	pthread_attr_t attributes;
 	int ret;
@@ -117,23 +117,23 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	/* Start server thread */
 	ret = pthread_attr_init(&attributes);
 	if (ret != 0) {
-		csp_print("csp_if_udp_init: pthread_attr_init failed: %s: %d\n", strerror(ret), ret);
+		csp_print("csp_udp_init: pthread_attr_init failed: %s: %d\n", strerror(ret), ret);
 	}
 	ret = pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
 	if (ret != 0) {
-		csp_print("csp_if_udp_init: pthread_attr_setdetachstate failed: %s: %d\n", strerror(ret), ret);
+		csp_print("csp_udp_init: pthread_attr_setdetachstate failed: %s: %d\n", strerror(ret), ret);
 	}
-	ret = pthread_create(&ifconf->server_handle, &attributes, csp_if_udp_rx_loop, iface);
+	ret = pthread_create(&ifconf->server_handle, &attributes, csp_udp_rx_loop, iface);
 	if (ret != 0) {
-		csp_print("csp_if_udp_init: pthread_create failed: %s: %d\n", strerror(ret), ret);
+		csp_print("csp_udp_init: pthread_create failed: %s: %d\n", strerror(ret), ret);
 	}
 	ret = pthread_attr_destroy(&attributes);
 	if (ret != 0) {
-		csp_print("csp_if_udp_init: pthread_attr_destroy failed: %s: %d\n", strerror(ret), ret);
+		csp_print("csp_udp_init: pthread_attr_destroy failed: %s: %d\n", strerror(ret), ret);
 	}
 
 	/* Register interface */
 	iface->name = "UDP",
-	iface->nexthop = csp_if_udp_tx,
+	iface->nexthop = csp_udp_tx,
 	csp_iflist_add(iface);
 }
