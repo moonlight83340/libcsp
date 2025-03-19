@@ -67,7 +67,7 @@ static csp_iface_t * add_udp_iface(char * address, int lport, int rport) {
 	conf->host = address;
 	conf->lport = lport;
 	conf->rport = rport;
-	csp_if_udp_init(iface, conf);
+	csp_udp_init(iface, conf);
 
 	return iface;
 }

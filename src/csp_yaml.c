@@ -107,7 +107,7 @@ static void csp_yaml_end_if(struct data_s * data, unsigned int * dfl_addr) {
 		udp_conf->host = data->server;
 		udp_conf->lport = atoi(data->listen_port);
 		udp_conf->rport = atoi(data->remote_port);
-		csp_if_udp_init(iface, udp_conf);
+		csp_udp_init(iface, udp_conf);
 
 	}
 

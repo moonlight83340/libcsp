@@ -16,7 +16,7 @@ extern "C" {
 
 typedef struct {
 
-	/* Should be set before calling if_udp_init */
+	/* Should be set before calling csp_udp_init */
 	char * host;
 	int lport;
 	int rport;
@@ -46,7 +46,7 @@ typedef struct {
  * @param[in] ifconf Pointer to the UDP interface configuration structure.
  * @return #CSP_ERR_NONE on success, otherwise an error code.
  */
-int csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
+int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
 
 #ifdef __cplusplus
 }
