@@ -137,3 +137,30 @@ void csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	iface->nexthop = csp_udp_tx,
 	csp_iflist_add(iface);
 }
+
+int csp_udp_stop(csp_iface_t * iface) {
+	csp_if_udp_conf_t * ifconf;
+
+	if ((iface == NULL) || (iface->driver_data == NULL)) {
+		return CSP_ERR_INVAL;
+	}
+
+	ifconf = iface->driver_data;
+
+	int error = pthread_cancel(ifconf->server_handle);
+	if (error != 0) {
+		csp_print("%s[%s]: pthread_cancel() failed, error: %s\n", __func__, iface->name, strerror(error));
+		return CSP_ERR_DRIVER;
+	}
+
+	error = close(ifconf->sockfd);
+	if (error != 0) {
+		csp_print("%s[%s]: close() sockfd failed, error: %s\n", __func__, iface->name, strerror(error));
+		return CSP_ERR_DRIVER;
+	}
+
+	/* Remove the interface */
+	csp_iflist_remove(iface);
+
+	return CSP_ERR_NONE;
+}

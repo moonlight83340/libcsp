@@ -41,6 +41,18 @@ typedef struct {
  */
 void csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
 
+/**
+ * @brief Stops the UDP interface.
+ *
+ * This function stops the specified UDP interface, terminating any ongoing
+ * communication and releasing associated resources.
+ *
+ * @param[in] iface Pointer to the CSP interface structure.
+ *
+ * @return #CSP_ERR_NONE on success, otherwise an error code.
+ */
+int csp_udp_stop(csp_iface_t * iface);
+
 #ifdef __cplusplus
 }
 #endif
