@@ -11,5 +11,4 @@ Interfaces
     csp_if_kiss_h
     csp_if_lo_h
     csp_if_tun_h
-    csp_if_udp_h
     csp_if_zmqhub_h
