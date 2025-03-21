@@ -37,6 +37,10 @@ typedef struct {
  *
  * TX peer:
  *   Outgoing CSP packets will be transferred to the peer specified by the host argument
+ *
+ * @param[in] iface Pointer to the CSP interface structure to be initialized.
+ * @param[in] ifconf Pointer to the UDP interface configuration structure.
+ * @return #CSP_ERR_NONE on success, otherwise an error code.
  */
 int csp_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf);
 
