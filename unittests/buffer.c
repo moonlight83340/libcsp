@@ -1,6 +1,9 @@
 #include <check.h>
 #include "../include/csp/csp.h"
 
+/* when using csp_buffer_get(), CSP will try to reserve the last two buffers */
+#define BUFFER_RESERVED 2
+
 /* https://github.com/libcsp/libcsp/issues/734 */
 START_TEST(test_alloc_clean_734)
 {
@@ -29,15 +32,40 @@ START_TEST(test_alloc_clean_734)
 }
 END_TEST
 
-Suite * buffer_suite(void)
-{
-	Suite *s;
-	TCase *tc_alloc;
+START_TEST(test_out_of_buffers) {
+	int buffer_count = CSP_BUFFER_COUNT - BUFFER_RESERVED;
+	csp_packet_t * packets[buffer_count];
+	csp_packet_t * p;
+	int i;
+
+	csp_init();
+
+	memset(packets, 0, sizeof(packets));
+
+	for (i = 0; i < buffer_count; i++) {
+		packets[i] = csp_buffer_get(0);
+		ck_assert_ptr_nonnull(packets[i]);
+	}
+
+	ck_assert_int_eq(csp_buffer_remaining() - BUFFER_RESERVED, 0);
+	p = csp_buffer_get(0);
+	ck_assert_ptr_null(p);
+
+	for (i = 0; i < buffer_count; i++) {
+		csp_buffer_free(packets[i]);
+	}
+}
+END_TEST
+
+Suite * buffer_suite(void) {
+	Suite * s;
+	TCase * tc_alloc;
 
 	s = suite_create("Packet Buffer");
 
 	tc_alloc = tcase_create("allocate");
 	tcase_add_test(tc_alloc, test_alloc_clean_734);
+	tcase_add_test(tc_alloc, test_out_of_buffers);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
