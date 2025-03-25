@@ -1,0 +1,45 @@
+name: Run Unit Tests & Coverage
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup packages on Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install libzmq3-dev libsocketcan-dev check lcov
+
+      - name: Setup build system packages on Linux
+        run: |
+          sudo apt-get install ninja-build cmake
+
+      - name: Build
+        run: cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON && ninja -C build
+
+      - name: Run tests
+        run: ./build/unittests/csp_tests
+
+      - name: Collect coverage
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage_filtered.info
+          genhtml coverage_filtered.info --output-directory coverage_report
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage_report/
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage_filtered.info
+          flags: unittests
+          name: codecov-coverage

@@ -8,3 +8,8 @@ if(CHECK_FOUND)
     hmac.c
   )
 endif()
+
+  if(ENABLE_COVERAGE)
+    target_compile_options(csp PRIVATE -fprofile-arcs -ftest-coverage)
+    target_link_libraries(csp PRIVATE gcov)
+  endif()
