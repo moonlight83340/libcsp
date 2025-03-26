@@ -125,6 +125,18 @@ START_TEST(test_buffer_get_isr_out_of_buffers) {
 }
 END_TEST
 
+START_TEST(test_buffer_free_isr_double_free) {
+	csp_init();
+
+	csp_packet_t * packet = csp_buffer_get_always_isr();
+	csp_buffer_free_isr(packet);
+	ck_assert_int_eq(csp_dbg_errno, 0);
+
+	csp_buffer_free_isr(packet);
+	ck_assert_int_eq(csp_dbg_errno, CSP_DBG_ERR_ALREADY_FREE);
+}
+END_TEST
+
 Suite * buffer_suite(void) {
 	Suite * s;
 	TCase * tc_alloc;
@@ -138,6 +150,7 @@ Suite * buffer_suite(void) {
 	tcase_add_test(tc_alloc, test_buffer_clone);
 	tcase_add_test(tc_alloc, test_double_free);
 	tcase_add_test(tc_alloc, test_buffer_get_isr_out_of_buffers);
+	tcase_add_test(tc_alloc, test_buffer_free_isr_double_free);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
