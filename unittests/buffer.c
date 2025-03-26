@@ -78,6 +78,21 @@ START_TEST(test_corrupt_buffer) {
 }
 END_TEST
 
+START_TEST(test_buffer_clone) {
+	csp_init();
+	csp_packet_t * orig = csp_buffer_get_always();
+	memcpy(orig->data, "original", 9);
+	orig->length = 9;
+
+	csp_packet_t * clone = csp_buffer_clone(orig);
+	ck_assert_mem_eq(clone->data, orig->data, orig->length);
+	ck_assert_int_eq(clone->length, orig->length);
+
+	csp_buffer_free(orig);
+	csp_buffer_free(clone);
+}
+END_TEST
+
 Suite * buffer_suite(void) {
 	Suite * s;
 	TCase * tc_alloc;
@@ -88,6 +103,7 @@ Suite * buffer_suite(void) {
 	tcase_add_test(tc_alloc, test_alloc_clean_734);
 	tcase_add_test(tc_alloc, test_out_of_buffers);
 	tcase_add_test(tc_alloc, test_corrupt_buffer);
+	tcase_add_test(tc_alloc, test_buffer_clone);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
