@@ -100,6 +100,38 @@ START_TEST(test_queue_dequeue_underflow)
 }
 END_TEST
 
+
+START_TEST(test_queue_enqueue_overflow)
+{
+	char item1[] = "abc";
+	char item2[sizeof(item1)];
+
+	int qlength = 10;
+	int buf_size = qlength * sizeof(item1);
+	char buf[buf_size];
+
+	csp_queue_handle_t qh;
+	csp_static_queue_t q;
+
+	/* zero clear */
+	memset(buf, 0, buf_size);
+	memset(item2, 0, sizeof(item2));
+
+	csp_init();
+
+	/* create */
+	qh = csp_queue_create_static(qlength, sizeof(item1), buf, &q);
+
+	/* enqueue to the limit */
+	for (int i = 0; i < qlength; i++) {
+		ck_assert_int_eq(csp_queue_enqueue(qh, item1, 1000), CSP_QUEUE_OK);
+	}
+
+	/* The queue is full, so enqueue operation throws an error */
+	ck_assert_int_eq(csp_queue_enqueue(qh, item1, 1000), CSP_QUEUE_ERROR);
+}
+END_TEST
+
 Suite * queue_suite(void)
 {
 	Suite *s;
@@ -111,6 +143,7 @@ Suite * queue_suite(void)
 	tcase_add_test(tc_free, test_queue_free_707);
 	tcase_add_test(tc_free, test_queue_empty);
 	tcase_add_test(tc_free, test_queue_dequeue_underflow);
+	tcase_add_test(tc_free, test_queue_enqueue_overflow);
 	suite_add_tcase(s, tc_free);
 
 	return s;
