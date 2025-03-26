@@ -104,6 +104,27 @@ START_TEST(test_double_free) {
 }
 END_TEST
 
+START_TEST(test_buffer_get_isr_out_of_buffers) {
+	csp_init();
+
+	csp_packet_t * packets[CSP_BUFFER_COUNT - BUFFER_RESERVED];
+	csp_packet_t * packet;
+	int i;
+
+	for (i = 0; i < CSP_BUFFER_COUNT - BUFFER_RESERVED; i++) {
+		packets[i] = csp_buffer_get_isr(0);
+		ck_assert_ptr_nonnull(packets[i]);
+	}
+
+	packet = csp_buffer_get_isr(0);
+	ck_assert_ptr_null(packet);
+
+	for (i = 0; i < CSP_BUFFER_COUNT - BUFFER_RESERVED; i++) {
+		csp_buffer_free_isr(packets[i]);
+	}
+}
+END_TEST
+
 Suite * buffer_suite(void) {
 	Suite * s;
 	TCase * tc_alloc;
@@ -116,6 +137,7 @@ Suite * buffer_suite(void) {
 	tcase_add_test(tc_alloc, test_corrupt_buffer);
 	tcase_add_test(tc_alloc, test_buffer_clone);
 	tcase_add_test(tc_alloc, test_double_free);
+	tcase_add_test(tc_alloc, test_buffer_get_isr_out_of_buffers);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
