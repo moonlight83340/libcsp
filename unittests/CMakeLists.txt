@@ -6,6 +6,7 @@ if(CHECK_FOUND)
     queue.c
     buffer.c
     hmac.c
+    crc32.c
   )
 endif()
 
