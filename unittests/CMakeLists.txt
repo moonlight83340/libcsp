@@ -7,6 +7,7 @@ if(CHECK_FOUND)
     buffer.c
     hmac.c
     crc32.c
+    rdp_queue.c
   )
 endif()
 

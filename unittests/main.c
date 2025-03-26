@@ -9,6 +9,7 @@ Suite * queue_suite(void);
 Suite * buffer_suite(void);
 Suite * hmac_suite(void);
 Suite * crc32_suite(void);
+Suite * rdp_queue_suite(void);
 
 static struct option long_options[] = {
     {"verbose", no_argument, 0, 'V'},
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
 	srunner_add_suite(sr, buffer_suite());
 	srunner_add_suite(sr, hmac_suite());
 	srunner_add_suite(sr, crc32_suite());
+	srunner_add_suite(sr, rdp_queue_suite());
 
 	srunner_run_all(sr, print_verbosity);
 	number_failed = srunner_ntests_failed(sr);
