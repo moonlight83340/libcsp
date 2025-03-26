@@ -57,6 +57,27 @@ START_TEST(test_out_of_buffers) {
 }
 END_TEST
 
+/* For test purpose we declare the internal struct here */
+typedef struct csp_skbf_s {
+	unsigned int refcount;
+	void * skbf_addr;
+	csp_packet_t skbf_data;
+} csp_skbf_t;
+
+#define CONTAINER_OF(ptr, type, member) \
+	((type *)(void *)((char *)(ptr) - offsetof(type, member)))
+
+START_TEST(test_corrupt_buffer) {
+	csp_init();
+	csp_packet_t * packet = csp_buffer_get_always();
+	csp_skbf_t * buf = CONTAINER_OF(packet, csp_skbf_t, skbf_data);
+	buf->skbf_addr = (void *)0xDEADBEEF;
+
+	csp_buffer_free(packet);
+	ck_assert_int_eq(csp_dbg_errno, CSP_DBG_ERR_CORRUPT_BUFFER);
+}
+END_TEST
+
 Suite * buffer_suite(void) {
 	Suite * s;
 	TCase * tc_alloc;
@@ -66,6 +87,7 @@ Suite * buffer_suite(void) {
 	tc_alloc = tcase_create("allocate");
 	tcase_add_test(tc_alloc, test_alloc_clean_734);
 	tcase_add_test(tc_alloc, test_out_of_buffers);
+	tcase_add_test(tc_alloc, test_corrupt_buffer);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
