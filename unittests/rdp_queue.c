@@ -95,6 +95,33 @@ START_TEST(test_rdp_queue_flush_with_conn) {
 }
 END_TEST
 
+START_TEST(test_rdp_queue_flush_null_conn) {
+	csp_packet_t *p1;
+	csp_packet_t *p2;
+
+	csp_rdp_queue_init();
+	ck_assert_int_eq(csp_rdp_queue_tx_size(), 0);
+	ck_assert_int_eq(csp_rdp_queue_rx_size(), 0);
+
+	csp_buffer_init();
+	p1 = csp_buffer_get(0);
+	ck_assert_ptr_nonnull(p1);
+	csp_rdp_queue_tx_add(NULL, p1);
+
+	p2 = csp_buffer_get(0);
+	ck_assert_ptr_nonnull(p2);
+	csp_rdp_queue_rx_add(NULL, p2);
+
+	ck_assert_int_eq(csp_rdp_queue_tx_size(), 1);
+	ck_assert_int_eq(csp_rdp_queue_rx_size(), 1);
+
+	csp_rdp_queue_flush(NULL);
+
+	ck_assert_int_eq(csp_rdp_queue_tx_size(), 0);
+	ck_assert_int_eq(csp_rdp_queue_rx_size(), 0);
+}
+END_TEST
+
 Suite * rdp_queue_suite(void)
 {
 	Suite *s;
@@ -107,6 +134,7 @@ Suite * rdp_queue_suite(void)
 	tcase_add_test(tc_core, test_rdp_queue_tx_add_and_get);
 	tcase_add_test(tc_core, test_rdp_queue_rx_add_and_get);
 	tcase_add_test(tc_core, test_rdp_queue_flush_with_conn);
+	tcase_add_test(tc_core, test_rdp_queue_flush_null_conn);
 	suite_add_tcase(s, tc_core);
 
 	return s;
