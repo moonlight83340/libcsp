@@ -137,6 +137,35 @@ START_TEST(test_buffer_free_isr_double_free) {
 }
 END_TEST
 
+START_TEST(test_csp_buffer_refc_inc) {
+	csp_init();
+
+	csp_packet_t * packet;
+	csp_skbf_t * buf;
+
+	/* Test 1: Null pointer */
+	csp_buffer_refc_inc(NULL);
+	ck_assert_int_eq(csp_dbg_errno, CSP_DBG_ERR_INVALID_POINTER);
+
+	/* Test 2: Corrupt buffer */
+	packet = csp_buffer_get_always();
+	buf = CONTAINER_OF(packet, csp_skbf_t, skbf_data);
+	buf->skbf_addr = (void *)0xDEADBEEF;
+	csp_buffer_refc_inc(packet);
+	csp_buffer_free(packet);
+	ck_assert_int_eq(csp_dbg_errno, CSP_DBG_ERR_CORRUPT_BUFFER);
+
+	/* Test 3: Valid buffer */
+	packet = csp_buffer_get_always();
+	csp_buffer_refc_inc(packet);
+	buf = CONTAINER_OF(packet, csp_skbf_t, skbf_data);
+	ck_assert_int_eq(buf->refcount, 2);
+
+	csp_buffer_free(packet);
+	ck_assert_int_eq(csp_dbg_errno, CSP_DBG_ERR_REFCOUNT);
+}
+END_TEST
+
 Suite * buffer_suite(void) {
 	Suite * s;
 	TCase * tc_alloc;
@@ -151,6 +180,7 @@ Suite * buffer_suite(void) {
 	tcase_add_test(tc_alloc, test_double_free);
 	tcase_add_test(tc_alloc, test_buffer_get_isr_out_of_buffers);
 	tcase_add_test(tc_alloc, test_buffer_free_isr_double_free);
+	tcase_add_test(tc_alloc, test_csp_buffer_refc_inc);
 	suite_add_tcase(s, tc_alloc);
 
 	return s;
