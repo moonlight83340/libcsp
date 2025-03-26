@@ -8,6 +8,7 @@ void csp_rdp_queue_tx_add(csp_conn_t * conn, csp_packet_t * packet);
 void csp_rdp_queue_rx_add(csp_conn_t * conn, csp_packet_t * packet);
 csp_packet_t * csp_rdp_queue_tx_get(csp_conn_t * conn);
 csp_packet_t * csp_rdp_queue_rx_get(csp_conn_t * conn);
+void csp_rdp_queue_flush(csp_conn_t * conn);
 
 START_TEST(test_rdp_queue_empty) {
 	csp_rdp_queue_init();
@@ -63,6 +64,37 @@ START_TEST(test_rdp_queue_rx_add_and_get) {
 }
 END_TEST
 
+START_TEST(test_rdp_queue_flush_with_conn) {
+	csp_packet_t *p1, *p2;
+	csp_conn_t *conn;
+
+	csp_init();
+	csp_rdp_queue_init();
+	csp_buffer_init();
+
+	conn = csp_connect(CSP_PRIO_NORM, 1, 10, 1000, CSP_O_NONE);
+	ck_assert_ptr_nonnull(conn);
+
+	p1 = csp_buffer_get(0);
+	ck_assert_ptr_nonnull(p1);
+	csp_rdp_queue_tx_add(conn, p1);
+
+	p2 = csp_buffer_get(0);
+	ck_assert_ptr_nonnull(p2);
+	csp_rdp_queue_rx_add(conn, p2);
+
+	ck_assert_int_eq(csp_rdp_queue_tx_size(), 1);
+	ck_assert_int_eq(csp_rdp_queue_rx_size(), 1);
+
+	csp_rdp_queue_flush(conn);
+
+	ck_assert_int_eq(csp_rdp_queue_tx_size(), 0);
+	ck_assert_int_eq(csp_rdp_queue_rx_size(), 0);
+
+	csp_close(conn);
+}
+END_TEST
+
 Suite * rdp_queue_suite(void)
 {
 	Suite *s;
@@ -74,6 +106,7 @@ Suite * rdp_queue_suite(void)
 	tcase_add_test(tc_core, test_rdp_queue_empty);
 	tcase_add_test(tc_core, test_rdp_queue_tx_add_and_get);
 	tcase_add_test(tc_core, test_rdp_queue_rx_add_and_get);
+	tcase_add_test(tc_core, test_rdp_queue_flush_with_conn);
 	suite_add_tcase(s, tc_core);
 
 	return s;
