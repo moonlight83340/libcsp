@@ -29,7 +29,7 @@ typedef struct {
 /* We rely on the .bss section to clear this, so there is no csp_port_init() function */
 static csp_port_t ports[CSP_PORT_MAX_BIND + 2] = {0};
 
-csp_callback_t csp_port_get_callback(unsigned int port) {
+csp_callback_t csp_port_get_callback(const unsigned int port) {
 
 	if (port > CSP_PORT_MAX_BIND) {
 		return NULL;
@@ -53,7 +53,7 @@ csp_callback_t csp_port_get_callback(unsigned int port) {
 	return NULL;
 }
 
-csp_socket_t * csp_port_get_socket(unsigned int port) {
+csp_socket_t * csp_port_get_socket(const unsigned int port) {
 
 	if (port > CSP_PORT_MAX_BIND) {
 		return NULL;
