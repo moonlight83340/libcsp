@@ -837,6 +837,39 @@ static PyObject * pycsp_cmp_clock_get(PyObject * self, PyObject * args) {
 						 be32toh(msg.clock.tv_nsec));
 }
 
+static PyObject * pycsp_cmp_if_stats(PyObject * self, PyObject * args) {
+	const char * if_name;
+	uint16_t node;
+	uint32_t timeout = 1000;
+	if (!PyArg_ParseTuple(args, "sH|I", &if_name, &node, &timeout)) {
+		Py_RETURN_NONE;
+	}
+
+	struct csp_cmp_message msg;
+	memset(&msg, 0, sizeof(msg));
+	strncpy(msg.if_stats.interface, if_name, sizeof(msg.if_stats.interface) - 1);
+
+	int res;
+	Py_BEGIN_ALLOW_THREADS;
+	res = csp_cmp_if_stats(node, timeout, &msg);
+	Py_END_ALLOW_THREADS;
+	if (res != CSP_ERR_NONE) {
+		return PyErr_Error("Invalid interface name", res);
+	}
+
+	return Py_BuildValue("{s:I, s:I, s:I, s:I, s:I, s:I, s:I, s:I, s:I, s:I}",
+						 "tx", be32toh(msg.if_stats.tx),
+						 "rx", be32toh(msg.if_stats.rx),
+						 "tx_error", be32toh(msg.if_stats.tx_error),
+						 "rx_error", be32toh(msg.if_stats.rx_error),
+						 "drop", be32toh(msg.if_stats.drop),
+						 "autherr", be32toh(msg.if_stats.autherr),
+						 "frame", be32toh(msg.if_stats.frame),
+						 "txbytes", be32toh(msg.if_stats.txbytes),
+						 "rxbytes", be32toh(msg.if_stats.rxbytes),
+						 "irq", be32toh(msg.if_stats.irq));
+}
+
 #if CSP_HAVE_LIBZMQ
 static PyObject * pycsp_zmqhub_init(PyObject * self, PyObject * args) {
 	uint16_t addr;
@@ -991,6 +1024,7 @@ static PyMethodDef methods[] = {
 	{"cmp_poke", pycsp_cmp_poke, METH_VARARGS, ""},
 	{"cmp_clock_set", pycsp_cmp_clock_set, METH_VARARGS, ""},
 	{"cmp_clock_get", pycsp_cmp_clock_get, METH_VARARGS, ""},
+	{"cmp_if_stats", pycsp_cmp_if_stats, METH_VARARGS, ""},
 
 #if CSP_HAVE_LIBZMQ
 	/* csp/interfaces/csp_if_zmqhub.h */
