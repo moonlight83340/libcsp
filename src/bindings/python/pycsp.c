@@ -543,6 +543,22 @@ static PyObject * pycsp_shutdown(PyObject * self, PyObject * args) {
 	Py_RETURN_NONE;
 }
 
+static PyObject * pycsp_get_buf_free(PyObject * self, PyObject * args) {
+	uint16_t node;
+	uint32_t timeout = 1000;
+	if (!PyArg_ParseTuple(args, "H|I", &node, &timeout)) {
+		Py_RETURN_NONE;
+	}
+
+	uint32_t buf_free;
+	int res = csp_get_buf_free(node, timeout, &buf_free);
+	if (res == CSP_ERR_NONE) {
+		return PyLong_FromUnsignedLong(buf_free);
+	} else {
+		return PyErr_Error("csp_get_buf_free()", res);
+	}
+}
+
 static PyObject * pycsp_rdp_set_opt(PyObject * self, PyObject * args) {
 	unsigned int window_size;
 	unsigned int conn_timeout_ms;
@@ -967,6 +983,7 @@ static PyMethodDef methods[] = {
 	{"ping", pycsp_ping, METH_VARARGS, ""},
 	{"reboot", pycsp_reboot, METH_VARARGS, ""},
 	{"shutdown", pycsp_shutdown, METH_VARARGS, ""},
+	{"get_buf_free", pycsp_get_buf_free, METH_VARARGS, ""},
 	{"rdp_set_opt", pycsp_rdp_set_opt, METH_VARARGS, ""},
 	{"rdp_get_opt", pycsp_rdp_get_opt, METH_NOARGS, ""},
 
