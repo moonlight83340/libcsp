@@ -109,3 +109,5 @@ if __name__ == "__main__":
         # inbuf                   - buffer provided for recieving data (reply)      
     libcsp.transaction(0, options.server_address, 10, 1000, outbuf, inbuf)
     print ("  got reply from server [%s]" % (''.join('{:02x}'.format(x) for x in inbuf)))
+
+libcsp.ps(options.server_address)
