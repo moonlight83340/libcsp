@@ -8,7 +8,6 @@
 #include <csp/interfaces/csp_if_kiss.h>
 #include <csp/drivers/usart.h>
 #include <csp/drivers/can_socketcan.h>
-#include <csp/interfaces/csp_if_eth.h>
 #include <csp/drivers/eth_linux.h>
 #include <endian.h>
 
