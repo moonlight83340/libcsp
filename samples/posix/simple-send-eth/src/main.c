@@ -1,6 +1,5 @@
 #include <csp/csp.h>
 #include <csp/csp_debug.h>
-#include <csp/interfaces/csp_if_eth.h>
 #include <csp/drivers/eth_linux.h>
 
 #define SERVER_ADDR 1
