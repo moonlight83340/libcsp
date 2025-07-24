@@ -9,7 +9,6 @@
 #include <csp/drivers/can_socketcan.h>
 #include <csp/interfaces/csp_if_zmqhub.h>
 #include <csp/interfaces/csp_if_udp.h>
-#include <csp/interfaces/csp_if_eth.h>
 #include <csp/drivers/eth_linux.h>
 
 #include "csp_posix_helper.h"
