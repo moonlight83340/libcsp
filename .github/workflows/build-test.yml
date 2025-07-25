@@ -157,6 +157,15 @@ jobs:
           sudo ip link set veth1 up
           echo "veth1 is up"
 
+      - name: Check shared library dependencies with ldd
+        run: |
+          echo "🔍 ldd for csp_server:"
+          ldd ./build/examples/csp_server || echo "❌ csp_server not found or failed"
+
+          echo ""
+          echo "🔍 ldd for csp_client:"
+          ldd ./build/examples/csp_client || echo "❌ csp_client not found or failed"
+
       - name: Patch RPATH to absolute path
         run: |
           echo "Current RPATH:"
@@ -178,12 +187,20 @@ jobs:
           sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_server
           sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_client
 
+      - name: Check shared library dependencies with ldd after setcap
+        run: |
+          echo "🔍 ldd for csp_server:"
+          ldd ./build/examples/csp_server || echo "❌ csp_server not found or failed"
+
+          echo ""
+          echo "🔍 ldd for csp_client:"
+          ldd ./build/examples/csp_client || echo "❌ csp_client not found or failed"
       - name: Run ETH Server Test
         run: |
-          LD_LIBRARY_PATH=build ./build/examples/csp_server -e veth1 -a 1 -T 10 -v ${{ matrix.csp_version }} &
-          LD_LIBRARY_PATH=build ./build/examples/csp_client -e veth0 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
+          ./build/examples/csp_server -e veth1 -a 1 -T 10 -v ${{ matrix.csp_version }} &
+          ./build/examples/csp_client -e veth0 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
 
       - name: Run ETH Client Test
         run: |
-          LD_LIBRARY_PATH=build ./build/examples/csp_client -e veth0 -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
-          LD_LIBRARY_PATH=build ./build/examples/csp_server -e veth1 -a 1 -t -v ${{ matrix.csp_version }}
+          ./build/examples/csp_client -e veth0 -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
+          ./build/examples/csp_server -e veth1 -a 1 -t -v ${{ matrix.csp_version }}
