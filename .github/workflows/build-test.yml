@@ -69,6 +69,18 @@ jobs:
           CXX: ${{ matrix.compiler.CXX }}
         run: python3 ./examples/buildall.py --build-system=${{ matrix.buildsystem }}
 
+      - name: Compare RPATH of executables
+        run: |
+          echo "==> csp_server"
+          readelf -d ./build/examples/csp_server | grep -E 'RPATH|RUNPATH' || echo "No RPATH"
+          echo "==> csp_client"
+          readelf -d ./build/examples/csp_client | grep -E 'RPATH|RUNPATH' || echo "No RPATH"
+          echo "==> Other examples"
+          find ./build/examples -type f -executable | while read exe; do
+            echo "--- $exe ---"
+            readelf -d "$exe" | grep -E 'RPATH|RUNPATH' || echo "No RPATH"
+          done
+
       - name: Run Loopback Test
         run: |
           ./build/examples/csp_arch
@@ -146,15 +158,15 @@ jobs:
 
       - name: Setcap cap_net_raw+ep for csp_client and csp_server
         run: |
-          sudo setcap cap_net_raw+ep ./build/examples/csp_server
-          sudo setcap cap_net_raw+ep ./build/examples/csp_client
+          sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_server
+          sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_client
 
       - name: Run ETH Server Test
         run: |
-          ./build/examples/csp_server -e veth1 -a 1 -T 10 -v ${{ matrix.csp_version }} &
-          ./build/examples/csp_client -e veth0 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
+          LD_LIBRARY_PATH=build ./build/examples/csp_server -e veth1 -a 1 -T 10 -v ${{ matrix.csp_version }} &
+          LD_LIBRARY_PATH=build ./build/examples/csp_client -e veth0 -a 2 -C 1 -t -v ${{ matrix.csp_version }}
 
       - name: Run ETH Client Test
         run: |
-          ./build/examples/csp_client -e veth0 -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
-          ./build/examples/csp_server -e veth1 -a 1 -t -v ${{ matrix.csp_version }}
+          LD_LIBRARY_PATH=build ./build/examples/csp_client -e veth0 -a 2 -C 1 -T 10 -v ${{ matrix.csp_version }} &
+          LD_LIBRARY_PATH=build ./build/examples/csp_server -e veth1 -a 1 -t -v ${{ matrix.csp_version }}
