@@ -175,8 +175,8 @@ jobs:
           ABS_PATH="$(pwd)/build"
           echo "Setting RPATH to: $ABS_PATH"
 
-          #patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_server
-          #patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_client
+          patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_server
+          patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_client
 
           echo "New RPATH:"
           patchelf --print-rpath ./build/examples/csp_server
