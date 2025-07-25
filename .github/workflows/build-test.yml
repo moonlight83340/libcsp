@@ -54,6 +54,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install libzmq3-dev libsocketcan-dev socat iproute2
           sudo apt-get install linux-modules-extra-$(uname -r)
+          sudo apt install patchelf
 
       - name: Setup build system packages on Linux
         if: ${{ runner.os == 'Linux' && matrix.buildsystem != 'waf' }}
@@ -155,6 +156,22 @@ jobs:
           echo "veth0 is up"
           sudo ip link set veth1 up
           echo "veth1 is up"
+
+      - name: Patch RPATH to absolute path
+        run: |
+          echo "Current RPATH:"
+          patchelf --print-rpath ./build/examples/csp_server || echo "No RPATH set"
+          patchelf --print-rpath ./build/examples/csp_client || echo "No RPATH set"
+
+          ABS_PATH="$(pwd)/build"
+          echo "Setting RPATH to: $ABS_PATH"
+
+          patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_server
+          patchelf --set-rpath "$ABS_PATH" ./build/examples/csp_client
+
+          echo "New RPATH:"
+          patchelf --print-rpath ./build/examples/csp_server
+          patchelf --print-rpath ./build/examples/csp_client
 
       - name: Setcap cap_net_raw+ep for csp_client and csp_server
         run: |
