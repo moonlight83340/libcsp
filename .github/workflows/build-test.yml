@@ -166,6 +166,16 @@ jobs:
           echo "🔍 ldd for csp_client:"
           ldd ./build/examples/csp_client || echo "❌ csp_client not found or failed"
 
+      - name: Print environment variables before setcap
+        run: |
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          echo "PATH=$PATH"
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          echo "LD_RUN_PATH=$LD_RUN_PATH"
+          echo "LD_PRELOAD=$LD_PRELOAD"
+          echo "RPATH (from binary):"
+          find . -type f -executable -exec echo {} \; -exec readelf -d {} \; | grep -i 'rpath\|runpath' || true
+
       - name: Patch RPATH to absolute path
         run: |
           echo "Current RPATH:"
@@ -186,6 +196,16 @@ jobs:
         run: |
           sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_server
           sudo --preserve-env setcap cap_net_raw+ep ./build/examples/csp_client
+
+      - name: Print environment variables
+        run: |
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          echo "PATH=$PATH"
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          echo "LD_RUN_PATH=$LD_RUN_PATH"
+          echo "LD_PRELOAD=$LD_PRELOAD"
+          echo "RPATH (from binary):"
+          find . -type f -executable -exec echo {} \; -exec readelf -d {} \; | grep -i 'rpath\|runpath' || true
 
       - name: Check shared library dependencies with ldd after setcap
         run: |
