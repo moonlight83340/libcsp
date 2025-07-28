@@ -176,6 +176,11 @@ jobs:
           echo "RPATH (from binary):"
           find . -type f -executable -exec echo {} \; -exec readelf -d {} \; | grep -i 'rpath\|runpath' || true
 
+          ls -ld /home/runner/work/libcsp
+          ls -ld /home/runner/work/libcsp/libcsp
+          ls -ld /home/runner/work/libcsp/libcsp/build
+          ls -ld /home/runner/work/libcsp/libcsp/examples
+
       - name: Patch RPATH to absolute path
         run: |
           echo "Current RPATH:"
