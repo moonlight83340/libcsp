@@ -18,7 +18,7 @@ executable('csp_server',
 	dependencies : csp_dep,
 	objects : csp_posix_helper,
 	build_by_default : false,
-	build_rpath: meson.current_build_dir())
+	build_rpath: meson.build_root())
 
 executable('csp_client',
 	'csp_client.c',
@@ -27,7 +27,7 @@ executable('csp_client',
 	dependencies : csp_dep,
 	objects : csp_posix_helper,
 	build_by_default : false,
-	build_rpath: meson.current_build_dir())
+	build_rpath: meson.build_root())
 
 executable('csp_bridge_can2udp',
 	['csp_bridge_can2udp.c'],
