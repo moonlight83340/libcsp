@@ -74,6 +74,11 @@ jobs:
           ./build/examples/csp_arch
           ./build/examples/csp_server_client -T 10
 
+      - name: Setcap cap_net_raw+ep for csp_client and csp_server
+        run: |
+          sudo setcap cap_net_raw+ep ./build/examples/csp_server
+          sudo setcap cap_net_raw+ep ./build/examples/csp_client
+
       - name: Run KISS Client Test
         run: |
           socat -d -d -d pty,raw,echo=0,link=/tmp/pty1 pty,raw,echo=0,link=/tmp/pty2 &
