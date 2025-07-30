@@ -74,6 +74,7 @@ static uint8_t csp_eth_tx_buffer[CSP_ETH_BUF_SIZE];
 
 int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int node_id, bool promisc, csp_iface_t ** return_iface) {
 
+	int ret;
 	eth_context_t * ctx = calloc(1, sizeof(*ctx));
 	if (ctx == NULL) {
 		return CSP_ERR_NOMEM;
@@ -92,8 +93,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     /* Ether header 14 byte, seg header 4 byte, CSP header 6 byte */
     if (mtu < 24) {
         csp_print("csp_if_eth_init: mtu < 24\n");
-		free(ctx);
-        return CSP_ERR_INVAL;
+		ret = CSP_ERR_INVAL;
+		goto error;
     }
 
     /**
@@ -108,8 +109,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
         if (count > 0) {
             csp_print("Use command 'sudo setcap cap_net_raw+ep %s'\n", exe);
         }
-		free(ctx);
-        return CSP_ERR_INVAL;
+		ret = CSP_ERR_INVAL;
+		goto error;
     }
 
     /* Get the index of the interface to send on */
@@ -117,9 +118,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     strncpy(ctx->if_idx.ifr_name, device, IFNAMSIZ-1);
     if (ioctl(ctx->sockfd, SIOCGIFINDEX, &ctx->if_idx) < 0) {
         perror("SIOCGIFINDEX");
-		close(ctx->sockfd);
-		free(ctx);
-        return CSP_ERR_INVAL;
+		ret =  CSP_ERR_INVAL;
+		goto error;
     }
 
     struct ifreq if_mac;
@@ -128,9 +128,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     strncpy(if_mac.ifr_name, device, IFNAMSIZ-1);
     if (ioctl(ctx->sockfd, SIOCGIFHWADDR, &if_mac) < 0) {
         perror("SIOCGIFHWADDR");
-		close(ctx->sockfd);
-		free(ctx);
-        return CSP_ERR_INVAL;
+		ret =  CSP_ERR_INVAL;
+		goto error;
     }
 
     memcpy(&ctx->ifdata.if_mac, if_mac.ifr_hwaddr.sa_data, sizeof(ctx->ifdata.if_mac));
@@ -148,17 +147,15 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     int sockopt;
     if (setsockopt(ctx->sockfd, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof sockopt) == -1) {
         perror("setsockopt");
-        close(ctx->sockfd);
-		free(ctx);
-        return CSP_ERR_INVAL;
+		ret =  CSP_ERR_INVAL;
+		goto error;
     }
 
     /* Bind to device */
     if (setsockopt(ctx->sockfd, SOL_SOCKET, SO_BINDTODEVICE, device, IFNAMSIZ-1) == -1)	{
         perror("SO_BINDTODEVICE");
-        close(ctx->sockfd);
-		free(ctx);
-        return CSP_ERR_INVAL;
+        ret =  CSP_ERR_INVAL;
+		goto error;
     }
 
     /* fill sockaddr_ll struct to prepare binding */
@@ -170,9 +167,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     /* bind socket  */
 	if (bind(ctx->sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr_ll)) < 0) {
 		perror("bind");
-		close(ctx->sockfd);
-		free(ctx);
-		return CSP_ERR_INVAL;
+		ret =  CSP_ERR_INVAL;
+		goto error;
 	}
 
     ctx->ifdata.tx_mtu = mtu;
@@ -181,9 +177,8 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
 	static pthread_t server_handle;
 	if (pthread_create(&server_handle, NULL, &csp_eth_rx_loop, ctx) != 0) {
 		perror("pthread_create");
-		close(ctx->sockfd);
-		free(ctx);
-		return CSP_ERR_NOMEM;
+		ret = CSP_ERR_NOMEM;
+		goto error;
 	}
 
     /**
@@ -198,6 +193,15 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
 	}
 
     return CSP_ERR_NONE;
+
+error:
+	if (ctx) {
+		if (ctx->sockfd >= 0) {
+			close(ctx->sockfd);
+		}
+		free(ctx);
+	}
+	return ret;
 }
 
 #endif // !__CYGWIN__
