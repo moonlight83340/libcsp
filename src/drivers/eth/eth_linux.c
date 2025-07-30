@@ -177,9 +177,14 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
 
     ctx->ifdata.tx_mtu = mtu;
 
-    /* Start server thread */
-    static pthread_t server_handle;
-    pthread_create(&server_handle, NULL, &csp_eth_rx_loop, ctx);
+	/* Start server thread */
+	static pthread_t server_handle;
+	if (pthread_create(&server_handle, NULL, &csp_eth_rx_loop, ctx) != 0) {
+		perror("pthread_create");
+		close(ctx->sockfd);
+		free(ctx);
+		return CSP_ERR_NOMEM;
+	}
 
     /**
      * CSP INTERFACE
