@@ -117,6 +117,7 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     strncpy(ctx->if_idx.ifr_name, device, IFNAMSIZ-1);
     if (ioctl(ctx->sockfd, SIOCGIFINDEX, &ctx->if_idx) < 0) {
         perror("SIOCGIFINDEX");
+		close(ctx->sockfd);
 		free(ctx);
         return CSP_ERR_INVAL;
     }
@@ -127,6 +128,7 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     strncpy(if_mac.ifr_name, device, IFNAMSIZ-1);
     if (ioctl(ctx->sockfd, SIOCGIFHWADDR, &if_mac) < 0) {
         perror("SIOCGIFHWADDR");
+		close(ctx->sockfd);
 		free(ctx);
         return CSP_ERR_INVAL;
     }
@@ -166,7 +168,12 @@ int csp_eth_init(const char * device, const char * ifname, int mtu, unsigned int
     my_addr.sll_ifindex = ctx->if_idx.ifr_ifindex;
 
     /* bind socket  */
-    bind(ctx->sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr_ll));
+	if (bind(ctx->sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr_ll)) < 0) {
+		perror("bind");
+		close(ctx->sockfd);
+		free(ctx);
+		return CSP_ERR_INVAL;
+	}
 
     ctx->ifdata.tx_mtu = mtu;
 
