@@ -30,8 +30,6 @@ static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packe
 	}
 
 	csp_id_prepend(packet);
-	ifconf->peer_addr.sin_family = AF_INET;
-	ifconf->peer_addr.sin_port = htons(ifconf->rport);
 	sendto(ifconf->sockfd, packet->frame_begin, packet->frame_length, MSG_CONFIRM, (struct sockaddr *)&ifconf->peer_addr, sizeof(ifconf->peer_addr));
 	csp_buffer_free(packet);
 
@@ -101,6 +99,9 @@ void csp_if_udp_init(csp_iface_t * iface, csp_if_udp_conf_t * ifconf) {
 	if (inet_aton(ifconf->host, &ifconf->peer_addr.sin_addr) == 0) {
 		csp_print("  Unknown peer address %s\n", ifconf->host);
 	}
+
+	ifconf->peer_addr.sin_family = AF_INET;
+	ifconf->peer_addr.sin_port = htons(ifconf->rport);
 
 	ifconf->sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (ifconf->sockfd < 0) {
