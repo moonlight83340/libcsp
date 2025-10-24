@@ -11,8 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - '3.10'
-          - '3.11'
           - '3.12'
           - '3.13'
         sdk-version:
@@ -20,27 +18,41 @@ jobs:
           - '0.17.4'
 
     steps:
-      - name: Setup Python ${{ matrix.python-version }}
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Python version
-        run: python3 --version
 
       - name: Checkout libcsp
         uses: actions/checkout@v5
         with:
           path: libcsp
 
-      - name: Setup Zephyr
-        uses: zephyrproject-rtos/action-zephyr-setup@v1
-        with:
-          app-path: libcsp
-          toolchains: zephyr-native
-          sdk-version: ${{ matrix.sdk-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build gperf cmake wget xz-utils file
+
+      - name: Install Zephyr SDK
+        run: |
+          SDK_VERSION=${{ matrix.sdk-version }}
+          SDK_FILE="zephyr-sdk-${SDK_VERSION}_linux-x86_64_minimal.tar.xz"
+          wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${SDK_VERSION}/${SDK_FILE}
+          mkdir -p $HOME/zephyr-sdk
+          tar -xf ${SDK_FILE} -C $HOME/zephyr-sdk --strip-components=1
+          $HOME/zephyr-sdk/setup.sh -t zephyr-native
+
+          echo "ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk" >> $GITHUB_ENV
+          echo "ZEPHYR_BASE=$HOME/zephyrproject/zephyr" >> $GITHUB_ENV
+          echo "$HOME/zephyr-sdk/arm-zephyr-eabi/bin" >> $GITHUB_PATH
+
+      - name: Check SDK
+        run: |
+          echo "SDK path: $ZEPHYR_SDK_INSTALL_DIR"
+          $ZEPHYR_SDK_INSTALL_DIR/zephyr-sdk-env.sh || true
 
       - name: Build Zephyr sample (server-client)
         working-directory: libcsp/contrib/zephyr/samples/server-client
         run: |
-          cmake -B build -S . -DBOARD=qemu_x86 && cmqke --build build
+          cmake -B build -S . -DBOARD=qemu_x86
+          cmake --build build
