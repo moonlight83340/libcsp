@@ -41,6 +41,6 @@ jobs:
           sdk-version: ${{ matrix.sdk-version }}
 
       - name: Build Zephyr sample (server-client)
-        working-directory: libcsp/contrib/zephyr/
+        working-directory: libcsp/contrib/zephyr/samples/server-client
         run: |
-          west build -b qemu_x86 samples/server-client
+          cmake -B build -S . -DBOARD=qemu_x86 && cmqke --build build
