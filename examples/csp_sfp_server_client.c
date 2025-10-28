@@ -262,7 +262,7 @@ static int loopback_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet,
 
     /* add some sleep to avoid starving the system when RDP is not used */
     if (!test_options.rdp)
-        usleep(1000);
+        usleep(1500);
     csp_qfifo_write(packet, &csp_if_lo, NULL);
     return CSP_ERR_NONE;
 }
