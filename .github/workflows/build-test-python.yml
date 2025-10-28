@@ -82,13 +82,7 @@ jobs:
           sudo ip link set veth1 up
           echo "veth1 is up"
 
-      - name: Set capabilities for Python binary
-        run: |
-          PYTHON_BIN=$(readlink -f $(which python3))
-          echo "Setting capabilities for $PYTHON_BIN"
-          sudo --preserve-env setcap cap_net_raw+ep $PYTHON_BIN
-
       - name: Run ETH Python binding Test
         run: |
-          PYTHONPATH=builddir python3 examples/python_bindings_example_server.py -e veth1 -a 3 &
-          PYTHONPATH=builddir python3 examples/python_bindings_example_client.py -e veth0 -s 3 -a 2
+          sudo PYTHONPATH=builddir examples/python_bindings_example_server.py -e veth1 -a 3 &
+          sudo PYTHONPATH=builddir python3 examples/python_bindings_example_client.py -e veth0 -s 3 -a 2
