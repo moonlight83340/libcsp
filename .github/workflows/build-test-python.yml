@@ -84,5 +84,5 @@ jobs:
 
       - name: Run ETH Python binding Test
         run: |
-          sudo PYTHONPATH=builddir examples/python_bindings_example_server.py -e veth1 -a 3 &
-          sudo PYTHONPATH=builddir python3 examples/python_bindings_example_client.py -e veth0 -s 3 -a 2
+          sudo --preserve-env PYTHONPATH=builddir examples/python_bindings_example_server.py -e veth1 -a 3 &
+          sudo --preserve-env PYTHONPATH=builddir python3 examples/python_bindings_example_client.py -e veth0 -s 3 -a 2
