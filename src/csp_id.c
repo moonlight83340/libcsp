@@ -108,7 +108,6 @@ static void csp_id1_setup_rx(csp_packet_t * packet) {
  */
 
 #define CSP_ID2_HOST_SIZE  14
-#define CSP_ID2_PORT_SIZE  6
 
 #define CSP_ID2_PRIO_MASK    0x3
 #define CSP_ID2_PRIO_OFFSET  46

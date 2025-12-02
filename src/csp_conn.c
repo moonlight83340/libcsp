@@ -14,7 +14,7 @@
 #include "csp_rdp.h"
 
 #define OUTGOING_PORTS (((1 << (CSP_ID2_PORT_SIZE)) - 1) - CSP_PORT_MAX_BIND)
-#if OUTGOING_PORTS > CSP_CONN_MAX
+#if CSP_CONN_MAX > OUTGOING_PORTS
 #error "More connections than available outgoing ports"
 #endif
 

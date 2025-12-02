@@ -6,6 +6,8 @@ extern "C" {
 
 #include <csp/csp.h>
 
+#define CSP_ID2_PORT_SIZE  6
+
 /**
  * Prepend CSP header fields into the packet's data buffer.
  *
